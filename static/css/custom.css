@@ -1,0 +1,661 @@
+/* ================================================== */
+/* Spotify Picaflorino - Estilos Personalizados     */
+/* I.E. 30012 Victor Alberto Gill Mallma             */
+/* ================================================== */
+
+/* Variables CSS personalizadas */
+:root {
+  /* Colores institucionales */
+  --ie-blue: #1e3a8a;
+  --ie-gold: #fbbf24;
+  --spotify-green: #1db954;
+  --spotify-dark: #191414;
+  --spotify-gray: #121212;
+  --spotify-light-gray: #282828;
+  
+  /* Gradientes personalizados */
+  --gradient-primary: linear-gradient(135deg, var(--ie-blue) 0%, var(--spotify-green) 100%);
+  --gradient-secondary: linear-gradient(135deg, var(--ie-gold) 0%, #f59e0b 100%);
+  --gradient-dark: linear-gradient(135deg, var(--spotify-dark) 0%, var(--spotify-light-gray) 100%);
+  
+  /* Sombras personalizadas */
+  --shadow-glow: 0 0 20px rgba(29, 185, 84, 0.3);
+  --shadow-glow-blue: 0 0 20px rgba(30, 58, 138, 0.3);
+  --shadow-glow-gold: 0 0 20px rgba(251, 191, 36, 0.3);
+  
+  /* Transiciones */
+  --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-bounce: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+/* ================================================== */
+/* FUENTES Y TIPOGRAFÍA PERSONALIZADA                */
+/* ================================================== */
+
+/* Importar fuentes adicionales */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
+
+.font-poppins {
+  font-family: 'Poppins', sans-serif;
+}
+
+/* Efectos de texto */
+.text-gradient {
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.text-gradient-gold {
+  background: var(--gradient-secondary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ================================================== */
+/* ANIMACIONES PERSONALIZADAS                        */
+/* ================================================== */
+
+/* Animación de pulso musical */
+@keyframes music-pulse {
+  0%, 100% { 
+    transform: scaleY(0.5);
+    opacity: 0.7;
+  }
+  50% { 
+    transform: scaleY(1.2);
+    opacity: 1;
+  }
+}
+
+.music-pulse {
+  animation: music-pulse 1.5s ease-in-out infinite;
+}
+
+/* Animación de flotación */
+@keyframes float {
+  0%, 100% { 
+    transform: translateY(0px);
+  }
+  50% { 
+    transform: translateY(-10px);
+  }
+}
+
+.float {
+  animation: float 3s ease-in-out infinite;
+}
+
+/* Animación de rotación lenta */
+@keyframes rotate-slow {
+  from { 
+    transform: rotate(0deg);
+  }
+  to { 
+    transform: rotate(360deg);
+  }
+}
+
+.rotate-slow {
+  animation: rotate-slow 20s linear infinite;
+}
+
+/* Animación de brillo */
+@keyframes shine {
+  0% { 
+    opacity: 0.5;
+    transform: scale(1);
+  }
+  50% { 
+    opacity: 1;
+    transform: scale(1.05);
+  }
+  100% { 
+    opacity: 0.5;
+    transform: scale(1);
+  }
+}
+
+.shine {
+  animation: shine 2s ease-in-out infinite;
+}
+
+/* Animación de entrada desde abajo */
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.slide-up {
+  animation: slide-up 0.6s ease-out;
+}
+
+/* ================================================== */
+/* EFECTOS DE GLASSMORPHISM                          */
+/* ================================================== */
+
+.glass {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.glass-dark {
+  background: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.glass-green {
+  background: rgba(29, 185, 84, 0.2);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(29, 185, 84, 0.3);
+}
+
+/* ================================================== */
+/* REPRODUCTORES DE AUDIO PERSONALIZADOS            */
+/* ================================================== */
+
+/* Barra de progreso personalizada */
+.progress-bar {
+  position: relative;
+  background: #e5e7eb;
+  border-radius: 9999px;
+  overflow: hidden;
+}
+
+.progress-bar::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  background: var(--gradient-primary);
+  border-radius: 9999px;
+  transition: width 0.1s ease;
+}
+
+.progress-bar:hover {
+  box-shadow: var(--shadow-glow);
+}
+
+/* Visualizador de audio */
+.audio-visualizer {
+  display: flex;
+  align-items: end;
+  justify-content: center;
+  gap: 2px;
+  height: 60px;
+}
+
+.audio-visualizer .bar {
+  width: 4px;
+  background: var(--gradient-primary);
+  border-radius: 2px;
+  transition: height 0.1s ease;
+}
+
+/* Efectos de hover para controles */
+.audio-control {
+  transition: var(--transition-smooth);
+}
+
+.audio-control:hover {
+  transform: scale(1.1);
+  box-shadow: var(--shadow-glow);
+}
+
+/* ================================================== */
+/* CARDS Y TARJETAS PERSONALIZADAS                  */
+/* ================================================== */
+
+.card-hover {
+  transition: var(--transition-smooth);
+}
+
+.card-hover:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+}
+
+.card-music {
+  position: relative;
+  overflow: hidden;
+}
+
+.card-music::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  transform: rotate(45deg);
+  transition: var(--transition-smooth);
+  opacity: 0;
+}
+
+.card-music:hover::before {
+  animation: card-shine 1.5s ease-in-out;
+  opacity: 1;
+}
+
+@keyframes card-shine {
+  0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+  100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+}
+
+/* ================================================== */
+/* BOTONES PERSONALIZADOS                           */
+/* ================================================== */
+
+.btn-gradient {
+  background: var(--gradient-primary);
+  transition: var(--transition-smooth);
+}
+
+.btn-gradient:hover {
+  background: linear-gradient(135deg, #1e3a8a 0%, #16a34a 100%);
+  box-shadow: var(--shadow-glow);
+  transform: translateY(-2px);
+}
+
+.btn-gradient-gold {
+  background: var(--gradient-secondary);
+  transition: var(--transition-smooth);
+}
+
+.btn-gradient-gold:hover {
+  background: linear-gradient(135deg, #f59e0b 0%, #dc2626 100%);
+  box-shadow: var(--shadow-glow-gold);
+  transform: translateY(-2px);
+}
+
+.btn-music {
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-music::after {
+  content: '♪';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  opacity: 0;
+  transition: var(--transition-smooth);
+  font-size: 1.5em;
+}
+
+.btn-music:hover::after {
+  opacity: 1;
+  animation: music-note-float 1s ease-in-out;
+}
+
+@keyframes music-note-float {
+  0% { transform: translate(-50%, -50%) scale(0); }
+  50% { transform: translate(-50%, -60%) scale(1.2); }
+  100% { transform: translate(-50%, -50%) scale(1); }
+}
+
+/* ================================================== */
+/* NAVEGACIÓN PERSONALIZADA                         */
+/* ================================================== */
+
+.nav-link {
+  position: relative;
+  transition: var(--transition-smooth);
+}
+
+.nav-link::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background: var(--spotify-green);
+  transition: var(--transition-smooth);
+}
+
+.nav-link:hover::after,
+.nav-link.active::after {
+  width: 100%;
+}
+
+/* ================================================== */
+/* SCROLLBARS PERSONALIZADAS                        */
+/* ================================================== */
+
+/* Webkit Scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--gradient-primary);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--ie-blue);
+}
+
+/* Firefox Scrollbars */
+html {
+  scrollbar-width: thin;
+  scrollbar-color: var(--spotify-green) #f1f5f9;
+}
+
+/* ================================================== */
+/* MODALES Y OVERLAYS                               */
+/* ================================================== */
+
+.modal-backdrop {
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.modal-content {
+  animation: modal-appear 0.3s ease-out;
+}
+
+@keyframes modal-appear {
+  from {
+    opacity: 0;
+    transform: scale(0.9) translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* ================================================== */
+/* FORMULARIOS PERSONALIZADOS                       */
+/* ================================================== */
+
+.form-input {
+  transition: var(--transition-smooth);
+}
+
+.form-input:focus {
+  box-shadow: 0 0 0 3px rgba(29, 185, 84, 0.1);
+  border-color: var(--spotify-green);
+}
+
+.form-input.error {
+  border-color: #ef4444;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+}
+
+.form-input.success {
+  border-color: var(--spotify-green);
+  box-shadow: 0 0 0 3px rgba(29, 185, 84, 0.1);
+}
+
+/* Placeholder personalizado */
+.form-input::placeholder {
+  color: #9ca3af;
+  opacity: 1;
+}
+
+/* ================================================== */
+/* LOADING Y SPINNERS                               */
+/* ================================================== */
+
+.spinner-music {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #e5e7eb;
+  border-top: 4px solid var(--spotify-green);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.loading-dots {
+  display: inline-flex;
+  gap: 4px;
+}
+
+.loading-dots span {
+  width: 8px;
+  height: 8px;
+  background: var(--spotify-green);
+  border-radius: 50%;
+  animation: loading-dot 1.4s ease-in-out infinite both;
+}
+
+.loading-dots span:nth-child(2) { animation-delay: 0.16s; }
+.loading-dots span:nth-child(3) { animation-delay: 0.32s; }
+
+@keyframes loading-dot {
+  0%, 80%, 100% { transform: scale(0.8); opacity: 0.5; }
+  40% { transform: scale(1.2); opacity: 1; }
+}
+
+/* ================================================== */
+/* UTILIDADES PERSONALIZADAS                        */
+/* ================================================== */
+
+/* Truncar texto con ellipsis */
+.text-truncate {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.text-truncate-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.text-truncate-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Centrado absoluto */
+.absolute-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+/* Aspect ratios personalizados */
+.aspect-square {
+  aspect-ratio: 1 / 1;
+}
+
+.aspect-music {
+  aspect-ratio: 4 / 3;
+}
+
+/* ================================================== */
+/* EFECTOS DE PARTÍCULAS                            */
+/* ================================================== */
+
+.particles {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: -1;
+  overflow: hidden;
+}
+
+.particle {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background: var(--spotify-green);
+  border-radius: 50%;
+  opacity: 0.3;
+  animation: particle-float 20s linear infinite;
+}
+
+@keyframes particle-float {
+  0% {
+    transform: translateY(100vh) rotate(0deg);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.3;
+  }
+  90% {
+    opacity: 0.3;
+  }
+  100% {
+    transform: translateY(-100px) rotate(360deg);
+    opacity: 0;
+  }
+}
+
+/* ================================================== */
+/* RESPONSIVE UTILITIES                             */
+/* ================================================== */
+
+/* Ocultar elementos en mobile */
+@media (max-width: 768px) {
+  .mobile-hidden {
+    display: none !important;
+  }
+  
+  .mobile-text-sm {
+    font-size: 0.875rem !important;
+  }
+  
+  .mobile-p-2 {
+    padding: 0.5rem !important;
+  }
+}
+
+/* Mostrar solo en mobile */
+@media (min-width: 769px) {
+  .mobile-only {
+    display: none !important;
+  }
+}
+
+/* ================================================== */
+/* DARK MODE SUPPORT                                */
+/* ================================================== */
+
+@media (prefers-color-scheme: dark) {
+  .auto-dark {
+    background-color: var(--spotify-dark);
+    color: white;
+  }
+  
+  .auto-dark .glass {
+    background: rgba(0, 0, 0, 0.3);
+    border-color: rgba(255, 255, 255, 0.1);
+  }
+}
+
+/* ================================================== */
+/* PRINT STYLES                                     */
+/* ================================================== */
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  
+  .print-block {
+    display: block !important;
+  }
+  
+  body {
+    background: white !important;
+    color: black !important;
+  }
+  
+  .text-gradient,
+  .text-gradient-gold {
+    -webkit-text-fill-color: black;
+    background: none;
+  }
+}
+
+/* ================================================== */
+/* ACCESSIBILITY IMPROVEMENTS                       */
+/* ================================================== */
+
+/* Focus visible para mejor accesibilidad */
+.focus-visible:focus-visible {
+  outline: 2px solid var(--spotify-green);
+  outline-offset: 2px;
+}
+
+/* Reducir animaciones para usuarios que prefieren menos movimiento */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Alto contraste */
+@media (prefers-contrast: high) {
+  .glass,
+  .glass-dark,
+  .glass-green {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background: rgba(255, 255, 255, 0.9);
+    border: 2px solid #000;
+  }
+}
+
+/* ================================================== */
+/* CUSTOM SCROLLING BEHAVIOR                        */
+/* ================================================== */
+
+html {
+  scroll-behavior: smooth;
+}
+
+/* Smooth scrolling para navegadores que no lo soportan */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+/* ================================================== */
+/* FIN DEL ARCHIVO CSS                              */
+/* ================================================== */

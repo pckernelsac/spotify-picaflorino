@@ -1,0 +1,667 @@
+{% extends "base.html" %}
+
+{% block title %}Playlists - Spotify Picaflorino{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50">
+    
+    <!-- Header de playlists -->
+    <div class="bg-gradient-to-r from-purple-600 to-pink-600 text-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <div class="flex flex-col md:flex-row items-center justify-between">
+                <div>
+                    <h1 class="text-4xl font-bold mb-2">Playlists Educativas</h1>
+                    <p class="text-xl text-gray-200">Colecciones musicales curadas para el aprendizaje</p>
+                </div>
+                
+                <div class="mt-6 md:mt-0 flex items-center space-x-4">
+                    <button onclick="openCreatePlaylistModal()" 
+                            class="bg-white text-purple-600 px-6 py-3 rounded-full font-semibold hover:bg-gray-100 transition-all duration-200 flex items-center">
+                        <i class="fas fa-plus mr-2"></i>Crear Playlist
+                    </button>
+                    
+                    <div class="text-center">
+                        <div class="text-3xl font-bold">{{ playlists_publicas.total + mis_playlists|length }}</div>
+                        <div class="text-sm text-gray-200">Total Playlists</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+        <!-- Mis Playlists -->
+        <section class="mb-12">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-2xl font-bold text-gray-900 flex items-center">
+                    <i class="fas fa-user mr-3 text-purple-600"></i>
+                    Mis Playlists
+                </h2>
+                
+                <button onclick="openCreatePlaylistModal()" 
+                        class="text-purple-600 hover:text-purple-800 font-medium flex items-center">
+                    <i class="fas fa-plus mr-2"></i>Nueva Playlist
+                </button>
+            </div>
+            
+            {% if mis_playlists %}
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    {% for playlist in mis_playlists %}
+                        <div class="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                            <div class="relative group">
+                                {% if playlist.cover_image %}
+                                    <img src="{{ url_for('static', filename='uploads/covers/' + playlist.cover_image) }}" 
+                                         alt="{{ playlist.nombre }}" 
+                                         class="w-full h-48 object-cover">
+                                {% else %}
+                                    <div class="w-full h-48 bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center">
+                                        <i class="fas fa-list-music text-white text-4xl"></i>
+                                    </div>
+                                {% endif %}
+                                
+                                <!-- Overlay con controles -->
+                                <div class="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                    <div class="flex space-x-3">
+                                        <button onclick="playPlaylist({{ playlist.id }})" 
+                                                class="w-12 h-12 bg-white rounded-full flex items-center justify-center hover:bg-gray-100 transition-colors duration-200">
+                                            <i class="fas fa-play text-gray-800 ml-1"></i>
+                                        </button>
+                                        
+                                        <button onclick="editPlaylist({{ playlist.id }})" 
+                                                class="w-12 h-12 bg-purple-600 rounded-full flex items-center justify-center hover:bg-purple-700 transition-colors duration-200">
+                                            <i class="fas fa-edit text-white"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <!-- Badges -->
+                                <div class="absolute top-2 left-2 flex flex-col space-y-1">
+                                    {% if playlist.publica %}
+                                        <span class="bg-green-500 text-white px-2 py-1 rounded-full text-xs font-medium">
+                                            <i class="fas fa-globe mr-1"></i>Pública
+                                        </span>
+                                    {% else %}
+                                        <span class="bg-gray-500 text-white px-2 py-1 rounded-full text-xs font-medium">
+                                            <i class="fas fa-lock mr-1"></i>Privada
+                                        </span>
+                                    {% endif %}
+                                </div>
+                                
+                                <!-- Número de canciones -->
+                                <span class="absolute bottom-2 right-2 bg-black bg-opacity-70 text-white px-2 py-1 rounded text-xs">
+                                    {{ playlist.total_canciones }} canciones
+                                </span>
+                            </div>
+                            
+                            <!-- Información de la playlist -->
+                            <div class="p-6">
+                                <h3 class="font-bold text-lg text-gray-900 mb-2 truncate" title="{{ playlist.nombre }}">
+                                    {{ playlist.nombre }}
+                                </h3>
+                                
+                                {% if playlist.descripcion %}
+                                    <p class="text-gray-600 text-sm mb-3 line-clamp-2" title="{{ playlist.descripcion }}">
+                                        {{ playlist.descripcion }}
+                                    </p>
+                                {% endif %}
+                                
+                                <!-- Estadísticas -->
+                                <div class="flex justify-between items-center text-sm text-gray-500 mb-4">
+                                    <span class="flex items-center">
+                                        <i class="fas fa-music mr-1"></i>
+                                        {{ playlist.total_canciones }} canciones
+                                    </span>
+                                    
+                                    <span class="flex items-center">
+                                        <i class="fas fa-clock mr-1"></i>
+                                        {% set total_minutos = (playlist.duracion_total // 60) %}
+                                        {{ total_minutos }}min
+                                    </span>
+                                </div>
+                                
+                                <!-- Botones de acción -->
+                                <div class="flex space-x-2">
+                                    <button onclick="playPlaylist({{ playlist.id }})" 
+                                            class="flex-1 bg-purple-600 text-white py-2 px-4 rounded-lg hover:bg-purple-700 transition-colors duration-200 text-center text-sm font-medium">
+                                        <i class="fas fa-play mr-2"></i>Reproducir
+                                    </button>
+                                    
+                                    <div class="relative" x-data="{ open: false }">
+                                        <button @click="open = !open" 
+                                                class="bg-gray-200 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-300 transition-colors duration-200">
+                                            <i class="fas fa-ellipsis-v"></i>
+                                        </button>
+                                        
+                                        <div x-show="open" @click.away="open = false" 
+                                             class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-10"
+                                             x-transition:enter="transition ease-out duration-100"
+                                             x-transition:enter-start="transform opacity-0 scale-95"
+                                             x-transition:enter-end="transform opacity-100 scale-100">
+                                            
+                                            <button onclick="editPlaylist({{ playlist.id }})" 
+                                                    class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                                <i class="fas fa-edit mr-2"></i>Editar
+                                            </button>
+                                            
+                                            <button onclick="sharePlaylist({{ playlist.id }})" 
+                                                    class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                                <i class="fas fa-share mr-2"></i>Compartir
+                                            </button>
+                                            
+                                            <button onclick="duplicatePlaylist({{ playlist.id }})" 
+                                                    class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                                <i class="fas fa-copy mr-2"></i>Duplicar
+                                            </button>
+                                            
+                                            <hr class="my-1">
+                                            
+                                            <button onclick="deletePlaylist({{ playlist.id }})" 
+                                                    class="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50">
+                                                <i class="fas fa-trash mr-2"></i>Eliminar
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <!-- Estado vacío para mis playlists -->
+                <div class="text-center py-16 bg-white rounded-xl shadow-sm">
+                    <div class="w-24 h-24 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <i class="fas fa-list-music text-purple-600 text-3xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-900 mb-2">Aún no tienes playlists</h3>
+                    <p class="text-gray-600 mb-6">Crea tu primera playlist para organizar tu música favorita</p>
+                    <button onclick="openCreatePlaylistModal()" 
+                            class="bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition-colors duration-200 inline-flex items-center">
+                        <i class="fas fa-plus mr-2"></i>Crear mi primera playlist
+                    </button>
+                </div>
+            {% endif %}
+        </section>
+
+        <!-- Playlists Públicas -->
+        <section>
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-2xl font-bold text-gray-900 flex items-center">
+                    <i class="fas fa-globe mr-3 text-blue-600"></i>
+                    Playlists Públicas
+                </h2>
+                
+                <!-- Filtros -->
+                <div class="flex items-center space-x-4">
+                    <select id="sortFilter" class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="recent">Más recientes</option>
+                        <option value="popular">Más populares</option>
+                        <option value="name">Por nombre</option>
+                        <option value="songs">Más canciones</option>
+                    </select>
+                    
+                    <button onclick="refreshPublicPlaylists()" 
+                            class="text-blue-600 hover:text-blue-800 p-2">
+                        <i class="fas fa-sync-alt"></i>
+                    </button>
+                </div>
+            </div>
+            
+            {% if playlists_publicas.items %}
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    {% for playlist in playlists_publicas.items %}
+                        <div class="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                            <div class="relative group">
+                                {% if playlist.cover_image %}
+                                    <img src="{{ url_for('static', filename='uploads/covers/' + playlist.cover_image) }}" 
+                                         alt="{{ playlist.nombre }}" 
+                                         class="w-full h-48 object-cover">
+                                {% else %}
+                                    <div class="w-full h-48 bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+                                        <i class="fas fa-list-music text-white text-4xl"></i>
+                                    </div>
+                                {% endif %}
+                                
+                                <!-- Overlay con controles -->
+                                <div class="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                    <div class="flex space-x-3">
+                                        <button onclick="playPlaylist({{ playlist.id }})" 
+                                                class="w-12 h-12 bg-white rounded-full flex items-center justify-center hover:bg-gray-100 transition-colors duration-200">
+                                            <i class="fas fa-play text-gray-800 ml-1"></i>
+                                        </button>
+                                        
+                                        <button onclick="forkPlaylist({{ playlist.id }})" 
+                                                class="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center hover:bg-blue-700 transition-colors duration-200" 
+                                                title="Crear copia">
+                                            <i class="fas fa-code-branch text-white"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <!-- Badge público -->
+                                <span class="absolute top-2 left-2 bg-green-500 text-white px-2 py-1 rounded-full text-xs font-medium">
+                                    <i class="fas fa-globe mr-1"></i>Pública
+                                </span>
+                                
+                                <!-- Número de canciones -->
+                                <span class="absolute bottom-2 right-2 bg-black bg-opacity-70 text-white px-2 py-1 rounded text-xs">
+                                    {{ playlist.total_canciones }} canciones
+                                </span>
+                            </div>
+                            
+                            <!-- Información de la playlist -->
+                            <div class="p-6">
+                                <h3 class="font-bold text-lg text-gray-900 mb-2 truncate" title="{{ playlist.nombre }}">
+                                    {{ playlist.nombre }}
+                                </h3>
+                                
+                                {% if playlist.descripcion %}
+                                    <p class="text-gray-600 text-sm mb-3 line-clamp-2" title="{{ playlist.descripcion }}">
+                                        {{ playlist.descripcion }}
+                                    </p>
+                                {% endif %}
+                                
+                                <!-- Creador -->
+                                <div class="flex items-center mb-3">
+                                    <div class="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center mr-3">
+                                        <span class="text-white text-xs font-medium">
+                                            {{ playlist.creador.nombre[0].upper() }}{{ playlist.creador.apellidos[0].upper() }}
+                                        </span>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm font-medium text-gray-900">{{ playlist.creador.nombre }}</p>
+                                        <p class="text-xs text-gray-500">{{ playlist.creador.rol.title() }}</p>
+                                    </div>
+                                </div>
+                                
+                                <!-- Estadísticas -->
+                                <div class="flex justify-between items-center text-sm text-gray-500 mb-4">
+                                    <span class="flex items-center">
+                                        <i class="fas fa-music mr-1"></i>
+                                        {{ playlist.total_canciones }} canciones
+                                    </span>
+                                    
+                                    <span class="flex items-center">
+                                        <i class="fas fa-clock mr-1"></i>
+                                        {% set total_minutos = (playlist.duracion_total // 60) %}
+                                        {{ total_minutos }}min
+                                    </span>
+                                </div>
+                                
+                                <!-- Botones de acción -->
+                                <div class="flex space-x-2">
+                                    <button onclick="playPlaylist({{ playlist.id }})" 
+                                            class="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors duration-200 text-center text-sm font-medium">
+                                        <i class="fas fa-play mr-2"></i>Reproducir
+                                    </button>
+                                    
+                                    <button onclick="forkPlaylist({{ playlist.id }})" 
+                                            class="bg-gray-200 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-300 transition-colors duration-200" 
+                                            title="Crear copia">
+                                        <i class="fas fa-code-branch"></i>
+                                    </button>
+                                    
+                                    <button onclick="sharePlaylist({{ playlist.id }})" 
+                                            class="bg-gray-200 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-300 transition-colors duration-200">
+                                        <i class="fas fa-share"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <!-- Paginación -->
+                {% if playlists_publicas.pages > 1 %}
+                    <div class="mt-12 flex justify-center">
+                        <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
+                            <!-- Anterior -->
+                            {% if playlists_publicas.has_prev %}
+                                <a href="{{ url_for('playlists', page=playlists_publicas.prev_num) }}" 
+                                   class="relative inline-flex items-center px-4 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                                    <i class="fas fa-chevron-left mr-2"></i>Anterior
+                                </a>
+                            {% endif %}
+                            
+                            <!-- Números de página -->
+                            {% for page_num in playlists_publicas.iter_pages() %}
+                                {% if page_num %}
+                                    {% if page_num != playlists_publicas.page %}
+                                        <a href="{{ url_for('playlists', page=page_num) }}" 
+                                           class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">
+                                            {{ page_num }}
+                                        </a>
+                                    {% else %}
+                                        <span class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-blue-600 text-sm font-medium text-white">
+                                            {{ page_num }}
+                                        </span>
+                                    {% endif %}
+                                {% endif %}
+                            {% endfor %}
+                            
+                            <!-- Siguiente -->
+                            {% if playlists_publicas.has_next %}
+                                <a href="{{ url_for('playlists', page=playlists_publicas.next_num) }}" 
+                                   class="relative inline-flex items-center px-4 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                                    Siguiente<i class="fas fa-chevron-right ml-2"></i>
+                                </a>
+                            {% endif %}
+                        </nav>
+                    </div>
+                {% endif %}
+
+            {% else %}
+                <!-- Estado vacío para playlists públicas -->
+                <div class="text-center py-16 bg-white rounded-xl shadow-sm">
+                    <div class="w-24 h-24 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <i class="fas fa-globe text-blue-600 text-3xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-900 mb-2">No hay playlists públicas aún</h3>
+                    <p class="text-gray-600 mb-6">Sé el primero en crear una playlist pública para compartir con la comunidad</p>
+                    <button onclick="openCreatePlaylistModal()" 
+                            class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors duration-200 inline-flex items-center">
+                        <i class="fas fa-plus mr-2"></i>Crear playlist pública
+                    </button>
+                </div>
+            {% endif %}
+        </section>
+    </div>
+</div>
+
+<!-- Modal para crear/editar playlist -->
+<div id="playlistModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+    <div class="bg-white rounded-2xl p-8 w-full max-w-2xl mx-4 max-h-screen overflow-y-auto">
+        <h3 id="modalTitle" class="text-2xl font-bold text-gray-900 mb-6">Crear Nueva Playlist</h3>
+        
+        <form id="playlistForm" method="POST" enctype="multipart/form-data">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+            
+            <div class="space-y-6">
+                <!-- Imagen de portada -->
+                <div class="text-center">
+                    <div id="coverPreview" class="w-32 h-32 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl mx-auto mb-4 flex items-center justify-center cursor-pointer hover:opacity-80 transition-opacity duration-200" 
+                         onclick="document.getElementById('coverInput').click()">
+                        <i class="fas fa-camera text-white text-2xl"></i>
+                    </div>
+                    <input type="file" id="coverInput" accept="image/*" class="hidden" onchange="previewCover(event)">
+                    <p class="text-sm text-gray-500">Haz clic para cambiar la imagen</p>
+                </div>
+                
+                <!-- Nombre -->
+                <div>
+                    <label for="playlistName" class="block text-sm font-medium text-gray-700 mb-2">
+                        Nombre de la Playlist *
+                    </label>
+                    <input type="text" id="playlistName" name="nombre" required 
+                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent" 
+                           placeholder="Mi playlist educativa">
+                </div>
+                
+                <!-- Descripción -->
+                <div>
+                    <label for="playlistDescription" class="block text-sm font-medium text-gray-700 mb-2">
+                        Descripción
+                    </label>
+                    <textarea id="playlistDescription" name="descripcion" rows="3" 
+                              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent" 
+                              placeholder="Describe el propósito educativo de esta playlist..."></textarea>
+                </div>
+                
+                <!-- Visibilidad -->
+                <div class="flex items-center space-x-3">
+                    <input type="checkbox" id="isPublic" name="publica" 
+                           class="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded">
+                    <label for="isPublic" class="text-sm text-gray-700">
+                        <span class="font-medium">Hacer pública</span> - Otros usuarios podrán ver y usar esta playlist
+                    </label>
+                </div>
+            </div>
+            
+            <!-- Botones -->
+            <div class="flex justify-end space-x-4 mt-8">
+                <button type="button" onclick="closePlaylistModal()" 
+                        class="px-6 py-3 text-gray-600 hover:text-gray-800 font-medium">
+                    Cancelar
+                </button>
+                
+                <button type="submit" 
+                        class="bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition-colors duration-200 font-medium">
+                    <i class="fas fa-save mr-2"></i>
+                    <span id="submitBtnText">Crear Playlist</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let isEditing = false;
+    let editingId = null;
+    
+    // Abrir modal para crear playlist
+    function openCreatePlaylistModal() {
+        isEditing = false;
+        editingId = null;
+        
+        document.getElementById('modalTitle').textContent = 'Crear Nueva Playlist';
+        document.getElementById('submitBtnText').textContent = 'Crear Playlist';
+        document.getElementById('playlistForm').reset();
+        resetCoverPreview();
+        
+        document.getElementById('playlistModal').classList.remove('hidden');
+        document.getElementById('playlistModal').classList.add('flex');
+        
+        document.getElementById('playlistName').focus();
+    }
+    
+    // Cerrar modal
+    function closePlaylistModal() {
+        document.getElementById('playlistModal').classList.add('hidden');
+        document.getElementById('playlistModal').classList.remove('flex');
+    }
+    
+    // Preview de imagen de portada
+    function previewCover(event) {
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const preview = document.getElementById('coverPreview');
+                preview.style.backgroundImage = `url(${e.target.result})`;
+                preview.style.backgroundSize = 'cover';
+                preview.style.backgroundPosition = 'center';
+                preview.innerHTML = '';
+            };
+            reader.readAsDataURL(file);
+        }
+    }
+    
+    // Resetear preview de portada
+    function resetCoverPreview() {
+        const preview = document.getElementById('coverPreview');
+        preview.style.backgroundImage = '';
+        preview.innerHTML = '<i class="fas fa-camera text-white text-2xl"></i>';
+    }
+    
+    // Reproducir playlist
+    function playPlaylist(playlistId) {
+        // Implementar lógica para reproducir playlist
+        console.log('Playing playlist:', playlistId);
+        alert('Reproduciendo playlist... (función en desarrollo)');
+    }
+    
+    // Editar playlist
+    function editPlaylist(playlistId) {
+        isEditing = true;
+        editingId = playlistId;
+        
+        document.getElementById('modalTitle').textContent = 'Editar Playlist';
+        document.getElementById('submitBtnText').textContent = 'Guardar Cambios';
+        
+        // Aquí se cargarían los datos de la playlist
+        // Por ahora, simulamos la carga
+        setTimeout(() => {
+            document.getElementById('playlistName').value = 'Playlist Ejemplo';
+            document.getElementById('playlistDescription').value = 'Descripción de ejemplo...';
+            document.getElementById('isPublic').checked = true;
+        }, 100);
+        
+        document.getElementById('playlistModal').classList.remove('hidden');
+        document.getElementById('playlistModal').classList.add('flex');
+    }
+    
+    // Compartir playlist
+    function sharePlaylist(playlistId) {
+        const url = `${window.location.origin}/playlist/${playlistId}`;
+        
+        if (navigator.share) {
+            navigator.share({
+                title: 'Playlist Educativa',
+                text: 'Mira esta playlist educativa en Spotify Picaflorino',
+                url: url
+            });
+        } else {
+            navigator.clipboard.writeText(url);
+            showNotification('Enlace copiado al portapapeles', 'success');
+        }
+    }
+    
+    // Duplicar playlist
+    function duplicatePlaylist(playlistId) {
+        if (confirm('¿Deseas crear una copia de esta playlist?')) {
+            // Implementar lógica de duplicación
+            console.log('Duplicating playlist:', playlistId);
+            showNotification('Playlist duplicada exitosamente', 'success');
+        }
+    }
+    
+    // Fork playlist (crear copia de playlist pública)
+    function forkPlaylist(playlistId) {
+        if (confirm('¿Deseas crear tu propia copia de esta playlist?')) {
+            // Implementar lógica de fork
+            console.log('Forking playlist:', playlistId);
+            showNotification('Copia de playlist creada en tu biblioteca', 'success');
+        }
+    }
+    
+    // Eliminar playlist
+    function deletePlaylist(playlistId) {
+        if (confirm('¿Estás seguro de que quieres eliminar esta playlist? Esta acción no se puede deshacer.')) {
+            // Implementar lógica de eliminación
+            console.log('Deleting playlist:', playlistId);
+            showNotification('Playlist eliminada', 'success');
+            
+            // Remover del DOM
+            setTimeout(() => {
+                location.reload();
+            }, 1000);
+        }
+    }
+    
+    // Refrescar playlists públicas
+    function refreshPublicPlaylists() {
+        const refreshBtn = document.querySelector('button[onclick="refreshPublicPlaylists()"] i');
+        refreshBtn.classList.add('fa-spin');
+        
+        setTimeout(() => {
+            refreshBtn.classList.remove('fa-spin');
+            showNotification('Playlists actualizadas', 'info');
+        }, 1000);
+    }
+    
+    // Mostrar notificación
+    function showNotification(message, type = 'info') {
+        // Crear elemento de notificación
+        const notification = document.createElement('div');
+        notification.className = `fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg text-white transition-all duration-300 transform translate-x-full`;
+        
+        // Colores según tipo
+        const colors = {
+            success: 'bg-green-500',
+            error: 'bg-red-500',
+            warning: 'bg-yellow-500',
+            info: 'bg-blue-500'
+        };
+        
+        notification.classList.add(colors[type] || colors.info);
+        notification.innerHTML = `
+            <div class="flex items-center">
+                <i class="fas fa-${type === 'success' ? 'check' : type === 'error' ? 'times' : type === 'warning' ? 'exclamation' : 'info'}-circle mr-2"></i>
+                <span>${message}</span>
+            </div>
+        `;
+        
+        document.body.appendChild(notification);
+        
+        // Animar entrada
+        setTimeout(() => {
+            notification.classList.remove('translate-x-full');
+        }, 100);
+        
+        // Remover después de 3 segundos
+        setTimeout(() => {
+            notification.classList.add('translate-x-full');
+            setTimeout(() => {
+                document.body.removeChild(notification);
+            }, 300);
+        }, 3000);
+    }
+    
+    // Manejar envío del formulario
+    document.getElementById('playlistForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(this);
+        const action = isEditing ? 'actualizar' : 'crear';
+        
+        // Simular envío
+        showNotification(`Playlist ${action === 'crear' ? 'creada' : 'actualizada'} exitosamente`, 'success');
+        closePlaylistModal();
+        
+        // En implementación real, aquí iría la llamada AJAX
+        setTimeout(() => {
+            location.reload();
+        }, 1000);
+    });
+    
+    // Filtro de ordenamiento
+    document.getElementById('sortFilter').addEventListener('change', function() {
+        const value = this.value;
+        console.log('Sorting by:', value);
+        // Implementar lógica de ordenamiento
+    });
+    
+    // Cerrar modal con ESC
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closePlaylistModal();
+        }
+    });
+    
+    // Animaciones de entrada
+    document.addEventListener('DOMContentLoaded', function() {
+        const cards = document.querySelectorAll('.grid > div');
+        cards.forEach((card, index) => {
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(20px)';
+            
+            setTimeout(() => {
+                card.style.transition = 'all 0.5s ease-out';
+                card.style.opacity = '1';
+                card.style.transform = 'translateY(0)';
+            }, index * 100);
+        });
+    });
+</script>
+
+<style>
+    .line-clamp-2 {
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+</style>
+{% endblock %}

@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="es" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Spotify Picaflorino - I.E. 30012 Victor Alberto Gill Mallma{% endblock %}</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Awesome para iconos -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind Config Personalizado -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'spotify-green': '#1db954',
+                        'spotify-dark': '#191414',
+                        'spotify-gray': '#121212',
+                        'spotify-light-gray': '#282828',
+                        'ie-blue': '#1e3a8a',
+                        'ie-gold': '#fbbf24'
+                    },
+                    fontFamily: {
+                        'sans': ['Inter', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Estilos personalizados -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .gradient-bg {
+            background: linear-gradient(135deg, #1e3a8a 0%, #1db954 100%);
+        }
+        
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .hover-scale {
+            transition: transform 0.2s ease-in-out;
+        }
+        
+        .hover-scale:hover {
+            transform: scale(1.05);
+        }
+        
+        .music-wave {
+            animation: wave 1.5s ease-in-out infinite;
+        }
+        
+        @keyframes wave {
+            0%, 100% { transform: scaleY(0.5); }
+            50% { transform: scaleY(1); }
+        }
+        
+        .audio-player {
+            background: linear-gradient(45deg, #191414, #282828);
+        }
+        
+        .progress-bar {
+            background: linear-gradient(90deg, #1db954, #1ed760);
+        }
+    </style>
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="h-full bg-gray-50">
+    <!-- Barra de navegación superior -->
+    <nav class="bg-white shadow-lg border-b-4 border-ie-blue">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <!-- Logo y título -->
+                <div class="flex items-center">
+                    <a href="{{ url_for('index') }}" class="flex items-center space-x-3">
+                        <div class="w-10 h-10 bg-gradient-to-br from-ie-blue to-spotify-green rounded-full flex items-center justify-center">
+                            <i class="fas fa-music text-white text-lg"></i>
+                        </div>
+                        <div>
+                            <h1 class="text-xl font-bold text-gray-900">Spotify Picaflorino</h1>
+                            <p class="text-xs text-gray-600">I.E. 30012 Victor Alberto Gill Mallma</p>
+                        </div>
+                    </a>
+                </div>
+                
+                <!-- Menú de navegación -->
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="{{ url_for('index') }}" 
+                       class="text-gray-700 hover:text-ie-blue px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200
+                              {{ 'text-ie-blue border-b-2 border-ie-blue' if request.endpoint == 'index' }}">
+                        <i class="fas fa-home mr-2"></i>Inicio
+                    </a>
+                    
+                    {% if current_user.is_authenticated %}
+                        <a href="{{ url_for('biblioteca') }}" 
+                           class="text-gray-700 hover:text-ie-blue px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200
+                                  {{ 'text-ie-blue border-b-2 border-ie-blue' if request.endpoint == 'biblioteca' }}">
+                            <i class="fas fa-music mr-2"></i>Biblioteca
+                        </a>
+                        
+                        <a href="{{ url_for('playlists') }}" 
+                           class="text-gray-700 hover:text-ie-blue px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200
+                                  {{ 'text-ie-blue border-b-2 border-ie-blue' if request.endpoint == 'playlists' }}">
+                            <i class="fas fa-list mr-2"></i>Playlists
+                        </a>
+                        
+                        {% if current_user.puede_subir_musica() %}
+                            <a href="{{ url_for('subir') }}" 
+                               class="text-gray-700 hover:text-ie-blue px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200
+                                      {{ 'text-ie-blue border-b-2 border-ie-blue' if request.endpoint == 'subir' }}">
+                                <i class="fas fa-upload mr-2"></i>Subir Música
+                            </a>
+                        {% endif %}
+                    {% endif %}
+                </div>
+                
+                <!-- Usuario y acciones -->
+                <div class="flex items-center space-x-4">
+                    {% if current_user.is_authenticated %}
+                        <!-- Dropdown del usuario -->
+                        <div class="relative" x-data="{ open: false }">
+                            <button @click="open = !open" 
+                                    class="flex items-center space-x-2 text-gray-700 hover:text-ie-blue focus:outline-none focus:text-ie-blue">
+                                <div class="w-8 h-8 bg-gradient-to-br from-ie-blue to-spotify-green rounded-full flex items-center justify-center">
+                                    <span class="text-white text-sm font-medium">
+                                        {{ current_user.nombre[0].upper() }}{{ current_user.apellidos[0].upper() }}
+                                    </span>
+                                </div>
+                                <span class="hidden md:block text-sm font-medium">{{ current_user.nombre }}</span>
+                                <i class="fas fa-chevron-down text-xs"></i>
+                            </button>
+                            
+                            <div x-show="open" @click.away="open = false" 
+                                 class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50"
+                                 x-transition:enter="transition ease-out duration-100"
+                                 x-transition:enter-start="transform opacity-0 scale-95"
+                                 x-transition:enter-end="transform opacity-100 scale-100"
+                                 x-transition:leave="transition ease-in duration-75"
+                                 x-transition:leave-start="transform opacity-100 scale-100"
+                                 x-transition:leave-end="transform opacity-0 scale-95">
+                                
+                                <div class="px-4 py-2 border-b">
+                                    <p class="text-sm font-medium text-gray-900">{{ current_user.nombre_completo }}</p>
+                                    <p class="text-xs text-gray-600">{{ current_user.rol.title() }}</p>
+                                    {% if current_user.grado %}
+                                        <p class="text-xs text-gray-600">{{ current_user.grado }} - {{ current_user.seccion }}</p>
+                                    {% endif %}
+                                </div>
+                                
+                                <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                    <i class="fas fa-user mr-2"></i>Mi Perfil
+                                </a>
+                                
+                                <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                    <i class="fas fa-cog mr-2"></i>Configuración
+                                </a>
+                                
+                                <a href="{{ url_for('logout') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                    <i class="fas fa-sign-out-alt mr-2"></i>Cerrar Sesión
+                                </a>
+                            </div>
+                        </div>
+                    {% else %}
+                        <a href="{{ url_for('login') }}" 
+                           class="bg-ie-blue text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-800 transition-colors duration-200">
+                            Iniciar Sesión
+                        </a>
+                        <a href="{{ url_for('registro') }}" 
+                           class="bg-spotify-green text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-green-600 transition-colors duration-200">
+                            Registrarse
+                        </a>
+                    {% endif %}
+                </div>
+                
+                <!-- Menú móvil button -->
+                <div class="md:hidden flex items-center">
+                    <button type="button" class="text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-ie-blue p-2 rounded-md" 
+                            x-data @click="$refs.mobileMenu.classList.toggle('hidden')">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Menú móvil -->
+        <div class="md:hidden hidden" x-ref="mobileMenu">
+            <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-gray-50 border-t">
+                <a href="{{ url_for('index') }}" class="block px-3 py-2 text-base font-medium text-gray-700 hover:text-ie-blue hover:bg-gray-100 rounded-md">
+                    <i class="fas fa-home mr-2"></i>Inicio
+                </a>
+                
+                {% if current_user.is_authenticated %}
+                    <a href="{{ url_for('biblioteca') }}" class="block px-3 py-2 text-base font-medium text-gray-700 hover:text-ie-blue hover:bg-gray-100 rounded-md">
+                        <i class="fas fa-music mr-2"></i>Biblioteca
+                    </a>
+                    
+                    <a href="{{ url_for('playlists') }}" class="block px-3 py-2 text-base font-medium text-gray-700 hover:text-ie-blue hover:bg-gray-100 rounded-md">
+                        <i class="fas fa-list mr-2"></i>Playlists
+                    </a>
+                    
+                    {% if current_user.puede_subir_musica() %}
+                        <a href="{{ url_for('subir') }}" class="block px-3 py-2 text-base font-medium text-gray-700 hover:text-ie-blue hover:bg-gray-100 rounded-md">
+                            <i class="fas fa-upload mr-2"></i>Subir Música
+                        </a>
+                    {% endif %}
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <!-- Mensajes Flash -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4">
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} mb-4 p-4 rounded-md shadow-md
+                                {% if category == 'success' %}bg-green-50 border-l-4 border-green-400 text-green-700
+                                {% elif category == 'danger' %}bg-red-50 border-l-4 border-red-400 text-red-700
+                                {% elif category == 'warning' %}bg-yellow-50 border-l-4 border-yellow-400 text-yellow-700
+                                {% else %}bg-blue-50 border-l-4 border-blue-400 text-blue-700{% endif %}"
+                         x-data="{ show: true }" x-show="show" x-transition>
+                        <div class="flex justify-between items-center">
+                            <div class="flex items-center">
+                                {% if category == 'success' %}
+                                    <i class="fas fa-check-circle mr-2"></i>
+                                {% elif category == 'danger' %}
+                                    <i class="fas fa-exclamation-triangle mr-2"></i>
+                                {% elif category == 'warning' %}
+                                    <i class="fas fa-exclamation-circle mr-2"></i>
+                                {% else %}
+                                    <i class="fas fa-info-circle mr-2"></i>
+                                {% endif %}
+                                <span>{{ message }}</span>
+                            </div>
+                            <button @click="show = false" class="text-gray-400 hover:text-gray-600">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <!-- Contenido principal -->
+    <main class="min-h-screen">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white mt-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <!-- Información de la institución -->
+                <div class="md:col-span-2">
+                    <div class="flex items-center space-x-3 mb-4">
+                        <div class="w-12 h-12 bg-gradient-to-br from-ie-blue to-spotify-green rounded-full flex items-center justify-center">
+                            <i class="fas fa-music text-white text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold">Spotify Picaflorino</h3>
+                            <p class="text-gray-400 text-sm">Plataforma Educativa Musical</p>
+                        </div>
+                    </div>
+                    <p class="text-gray-400 mb-4">
+                        Sistema educativo de gestión musical para la Institución Educativa 30012 
+                        "Victor Alberto Gill Mallma" de Huancayo, Junín. Facilitando el aprendizaje 
+                        a través de la música.
+                    </p>
+                    <div class="flex space-x-4">
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors duration-200">
+                            <i class="fab fa-facebook-f text-xl"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors duration-200">
+                            <i class="fab fa-youtube text-xl"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors duration-200">
+                            <i class="fab fa-instagram text-xl"></i>
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Enlaces rápidos -->
+                <div>
+                    <h4 class="text-lg font-semibold mb-4">Enlaces Rápidos</h4>
+                    <ul class="space-y-2">
+                        <li><a href="{{ url_for('index') }}" class="text-gray-400 hover:text-white transition-colors duration-200">Inicio</a></li>
+                        <li><a href="{{ url_for('biblioteca') }}" class="text-gray-400 hover:text-white transition-colors duration-200">Biblioteca</a></li>
+                        <li><a href="{{ url_for('playlists') }}" class="text-gray-400 hover:text-white transition-colors duration-200">Playlists</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors duration-200">Ayuda</a></li>
+                    </ul>
+                </div>
+                
+                <!-- Contacto -->
+                <div>
+                    <h4 class="text-lg font-semibold mb-4">Contacto</h4>
+                    <ul class="space-y-2">
+                        <li class="flex items-center text-gray-400">
+                            <i class="fas fa-map-marker-alt mr-2"></i>
+                            <span class="text-sm">Huancayo, Junín</span>
+                        </li>
+                        <li class="flex items-center text-gray-400">
+                            <i class="fas fa-envelope mr-2"></i>
+                            <span class="text-sm">info@ie30012.edu.pe</span>
+                        </li>
+                        <li class="flex items-center text-gray-400">
+                            <i class="fas fa-phone mr-2"></i>
+                            <span class="text-sm">(064) 123-456</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="border-t border-gray-800 mt-8 pt-8 text-center">
+                <p class="text-gray-400 text-sm">
+                    © 2024 I.E. 30012 Victor Alberto Gill Mallma. 
+                    Todos los derechos reservados. | Spotify Picaflorino v1.0.0
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Alpine.js para interactividad -->
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    
+    <!-- Scripts personalizados -->
+    <script>
+        // Auto-hide alerts después de 5 segundos
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(function() {
+                const alerts = document.querySelectorAll('.alert');
+                alerts.forEach(alert => {
+                    if (alert.__x && alert.__x.$data) {
+                        alert.__x.$data.show = false;
+                    }
+                });
+            }, 5000);
+        });
+        
+        // Función para formatear tiempo
+        function formatTime(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            return `${mins}:${secs.toString().padStart(2, '0')}`;
+        }
+        
+        // Función para mostrar notificaciones
+        function showNotification(message, type = 'info') {
+            // Implementar sistema de notificaciones
+            console.log(`${type.toUpperCase()}: ${message}`);
+        }
+    </script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

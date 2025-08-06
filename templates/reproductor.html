@@ -1,0 +1,651 @@
+{% extends "base.html" %}
+
+{% block title %}{{ cancion.titulo }} - {{ cancion.artista }} | Reproductor{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black text-white">
+    
+    <!-- Header del reproductor -->
+    <div class="bg-black bg-opacity-50 backdrop-blur-sm border-b border-gray-700">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+            <div class="flex items-center justify-between">
+                <a href="{{ url_for('biblioteca') }}" 
+                   class="flex items-center text-gray-300 hover:text-white transition-colors duration-200">
+                    <i class="fas fa-arrow-left mr-2"></i>
+                    <span>Volver a la biblioteca</span>
+                </a>
+                
+                <div class="flex items-center space-x-4">
+                    <button onclick="toggleFavorite()" 
+                            class="text-gray-300 hover:text-red-400 transition-colors duration-200">
+                        <i class="far fa-heart text-xl"></i>
+                    </button>
+                    
+                    <button onclick="shareTrack()" 
+                            class="text-gray-300 hover:text-blue-400 transition-colors duration-200">
+                        <i class="fas fa-share-alt text-xl"></i>
+                    </button>
+                    
+                    <button onclick="addToPlaylist()" 
+                            class="text-gray-300 hover:text-green-400 transition-colors duration-200">
+                        <i class="fas fa-plus text-xl"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contenido principal del reproductor -->
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            
+            <!-- Artwork y visualizador -->
+            <div class="space-y-8">
+                <!-- Artwork principal -->
+                <div class="relative">
+                    <div class="aspect-square rounded-2xl overflow-hidden shadow-2xl">
+                        {% if cancion.cover_image %}
+                            <img src="{{ url_for('static', filename='uploads/covers/' + cancion.cover_image) }}" 
+                                 alt="{{ cancion.titulo }}" 
+                                 class="w-full h-full object-cover">
+                        {% else %}
+                            <div class="w-full h-full bg-gradient-to-br from-ie-blue via-spotify-green to-purple-600 flex items-center justify-center">
+                                <i class="fas fa-music text-white text-8xl opacity-80"></i>
+                            </div>
+                        {% endif %}
+                        
+                        <!-- Overlay con controles -->
+                        <div class="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity duration-300">
+                            <button id="mainPlayBtn" onclick="togglePlay()" 
+                                    class="w-20 h-20 bg-white bg-opacity-90 rounded-full flex items-center justify-center hover:bg-opacity-100 transition-all duration-200 transform hover:scale-110">
+                                <i id="mainPlayIcon" class="fas fa-play text-black text-2xl ml-1"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Visualizador de audio -->
+                    <div class="mt-6 flex justify-center items-end space-x-1 h-20" id="audioVisualizer">
+                        <!-- Barras del visualizador (generadas dinámicamente) -->
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Información de la canción y controles -->
+            <div class="space-y-8">
+                
+                <!-- Información de la canción -->
+                <div class="space-y-4">
+                    <div class="flex flex-wrap gap-2 mb-4">
+                        {% if cancion.materia %}
+                            <span class="bg-ie-blue text-white px-3 py-1 rounded-full text-sm font-medium">
+                                <i class="fas fa-book mr-1"></i>{{ cancion.materia.replace('_', ' ').title() }}
+                            </span>
+                        {% endif %}
+                        
+                        {% if cancion.grado_objetivo %}
+                            <span class="bg-ie-gold text-white px-3 py-1 rounded-full text-sm font-medium">
+                                <i class="fas fa-graduation-cap mr-1"></i>{{ cancion.grado_objetivo }}
+                            </span>
+                        {% endif %}
+                        
+                        {% if cancion.genero %}
+                            <span class="bg-spotify-green text-white px-3 py-1 rounded-full text-sm font-medium">
+                                <i class="fas fa-music mr-1"></i>{{ cancion.genero.replace('_', ' ').title() }}
+                            </span>
+                        {% endif %}
+                    </div>
+                    
+                    <h1 class="text-4xl md:text-5xl font-bold text-white leading-tight">
+                        {{ cancion.titulo }}
+                    </h1>
+                    
+                    <h2 class="text-2xl md:text-3xl text-gray-300 font-medium">
+                        {{ cancion.artista }}
+                    </h2>
+                    
+                    {% if cancion.album %}
+                        <p class="text-lg text-gray-400">
+                            <i class="fas fa-compact-disc mr-2"></i>{{ cancion.album }}
+                            {% if cancion.año %}• {{ cancion.año }}{% endif %}
+                        </p>
+                    {% endif %}
+                    
+                    <!-- Estadísticas -->
+                    <div class="flex items-center space-x-6 text-sm text-gray-400">
+                        <span class="flex items-center">
+                            <i class="fas fa-play-circle mr-2"></i>
+                            {{ cancion.reproducciones_totales }} reproducciones
+                        </span>
+                        
+                        <span class="flex items-center">
+                            <i class="fas fa-clock mr-2"></i>
+                            {{ cancion.duracion_formato }}
+                        </span>
+                        
+                        <span class="flex items-center">
+                            <i class="fas fa-user mr-2"></i>
+                            {{ cancion.subido_por_usuario.nombre }}
+                        </span>
+                    </div>
+                </div>
+                
+                <!-- Reproductor de audio -->
+                <div class="bg-black bg-opacity-40 backdrop-blur-sm rounded-2xl p-6 border border-gray-700">
+                    <audio id="audioPlayer" 
+                           src="{{ url_for('stream_cancion', cancion_id=cancion.id) }}"
+                           preload="metadata"
+                           onloadedmetadata="initializePlayer()"
+                           ontimeupdate="updateProgress()"
+                           onended="onTrackEnd()">
+                    </audio>
+                    
+                    <!-- Controles principales -->
+                    <div class="flex items-center justify-center space-x-6 mb-6">
+                        <button onclick="previousTrack()" 
+                                class="text-gray-400 hover:text-white transition-colors duration-200" 
+                                title="Anterior">
+                            <i class="fas fa-step-backward text-2xl"></i>
+                        </button>
+                        
+                        <button onclick="rewind()" 
+                                class="text-gray-400 hover:text-white transition-colors duration-200" 
+                                title="Retroceder 10s">
+                            <i class="fas fa-undo text-xl"></i>
+                        </button>
+                        
+                        <button id="playPauseBtn" onclick="togglePlay()" 
+                                class="w-16 h-16 bg-spotify-green rounded-full flex items-center justify-center hover:bg-green-600 transition-all duration-200 transform hover:scale-105">
+                            <i id="playPauseIcon" class="fas fa-play text-white text-xl ml-1"></i>
+                        </button>
+                        
+                        <button onclick="fastForward()" 
+                                class="text-gray-400 hover:text-white transition-colors duration-200" 
+                                title="Adelantar 10s">
+                            <i class="fas fa-redo text-xl"></i>
+                        </button>
+                        
+                        <button onclick="nextTrack()" 
+                                class="text-gray-400 hover:text-white transition-colors duration-200" 
+                                title="Siguiente">
+                            <i class="fas fa-step-forward text-2xl"></i>
+                        </button>
+                    </div>
+                    
+                    <!-- Barra de progreso -->
+                    <div class="space-y-2">
+                        <div class="flex justify-between text-sm text-gray-400">
+                            <span id="currentTime">0:00</span>
+                            <span id="totalTime">{{ cancion.duracion_formato }}</span>
+                        </div>
+                        
+                        <div class="relative">
+                            <div class="w-full h-2 bg-gray-700 rounded-full cursor-pointer" 
+                                 onclick="seekTo(event)">
+                                <div id="progressBar" 
+                                     class="h-2 bg-gradient-to-r from-spotify-green to-green-400 rounded-full transition-all duration-100" 
+                                     style="width: 0%"></div>
+                            </div>
+                            
+                            <!-- Tooltip de tiempo -->
+                            <div id="progressTooltip" 
+                                 class="absolute -top-8 bg-black text-white px-2 py-1 rounded text-xs opacity-0 transition-opacity duration-200 pointer-events-none">
+                                0:00
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Controles adicionales -->
+                    <div class="flex items-center justify-between mt-6">
+                        <!-- Volumen -->
+                        <div class="flex items-center space-x-3">
+                            <button onclick="toggleMute()" class="text-gray-400 hover:text-white">
+                                <i id="volumeIcon" class="fas fa-volume-up"></i>
+                            </button>
+                            <div class="w-24 h-1 bg-gray-700 rounded-full cursor-pointer" onclick="setVolume(event)">
+                                <div id="volumeBar" class="h-1 bg-white rounded-full" style="width: 70%"></div>
+                            </div>
+                        </div>
+                        
+                        <!-- Velocidad de reproducción -->
+                        <div class="flex items-center space-x-2">
+                            <span class="text-gray-400 text-sm">Velocidad:</span>
+                            <select id="playbackRate" onchange="changePlaybackRate()" 
+                                    class="bg-gray-700 text-white text-sm rounded px-2 py-1 border-none outline-none">
+                                <option value="0.5">0.5x</option>
+                                <option value="0.75">0.75x</option>
+                                <option value="1" selected>1x</option>
+                                <option value="1.25">1.25x</option>
+                                <option value="1.5">1.5x</option>
+                                <option value="2">2x</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Repetir -->
+                        <button id="repeatBtn" onclick="toggleRepeat()" 
+                                class="text-gray-400 hover:text-white transition-colors duration-200">
+                            <i class="fas fa-redo"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Descripción educativa -->
+                {% if cancion.descripcion %}
+                    <div class="bg-black bg-opacity-40 backdrop-blur-sm rounded-2xl p-6 border border-gray-700">
+                        <h3 class="text-xl font-semibold mb-4 flex items-center">
+                            <i class="fas fa-info-circle mr-3 text-ie-blue"></i>
+                            Información Educativa
+                        </h3>
+                        <p class="text-gray-300 leading-relaxed">{{ cancion.descripcion }}</p>
+                    </div>
+                {% endif %}
+                
+                <!-- Acciones rápidas -->
+                <div class="grid grid-cols-2 gap-4">
+                    <button onclick="downloadTrack()" 
+                            class="bg-ie-blue hover:bg-blue-700 text-white font-medium py-3 px-6 rounded-xl transition-all duration-200 flex items-center justify-center">
+                        <i class="fas fa-download mr-2"></i>
+                        Descargar
+                    </button>
+                    
+                    <button onclick="reportTrack()" 
+                            class="bg-gray-700 hover:bg-gray-600 text-white font-medium py-3 px-6 rounded-xl transition-all duration-200 flex items-center justify-center">
+                        <i class="fas fa-flag mr-2"></i>
+                        Reportar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Sección de canciones relacionadas -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 border-t border-gray-700 mt-12">
+        <h3 class="text-2xl font-bold text-white mb-8">Canciones Relacionadas</h3>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6" id="relatedTracks">
+            <!-- Las canciones relacionadas se cargarán dinámicamente -->
+        </div>
+    </div>
+</div>
+
+<!-- Modal de compartir -->
+<div id="shareModal" class="fixed inset-0 bg-black bg-opacity-75 hidden items-center justify-center z-50">
+    <div class="bg-white rounded-2xl p-8 w-full max-w-md mx-4">
+        <h3 class="text-xl font-bold text-gray-900 mb-6 text-center">Compartir Canción</h3>
+        
+        <div class="space-y-4">
+            <button onclick="copyLink()" 
+                    class="w-full bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium py-3 px-4 rounded-lg flex items-center justify-center transition-colors duration-200">
+                <i class="fas fa-copy mr-2"></i>
+                Copiar enlace
+            </button>
+            
+            <button onclick="shareWhatsApp()" 
+                    class="w-full bg-green-500 hover:bg-green-600 text-white font-medium py-3 px-4 rounded-lg flex items-center justify-center transition-colors duration-200">
+                <i class="fab fa-whatsapp mr-2"></i>
+                Compartir en WhatsApp
+            </button>
+            
+            <button onclick="shareEmail()" 
+                    class="w-full bg-blue-500 hover:bg-blue-600 text-white font-medium py-3 px-4 rounded-lg flex items-center justify-center transition-colors duration-200">
+                <i class="fas fa-envelope mr-2"></i>
+                Enviar por email
+            </button>
+        </div>
+        
+        <button onclick="closeShareModal()" 
+                class="w-full mt-6 text-gray-600 hover:text-gray-800 font-medium py-2">
+            Cancelar
+        </button>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let audioPlayer;
+    let isPlaying = false;
+    let currentTime = 0;
+    let duration = 0;
+    let volume = 0.7;
+    let isMuted = false;
+    let isRepeating = false;
+    
+    // Inicializar el reproductor
+    function initializePlayer() {
+        audioPlayer = document.getElementById('audioPlayer');
+        audioPlayer.volume = volume;
+        duration = audioPlayer.duration;
+        
+        // Crear visualizador
+        createVisualizer();
+        
+        // Configurar eventos del mouse para la barra de progreso
+        setupProgressBarEvents();
+        
+        // Cargar canciones relacionadas
+        loadRelatedTracks();
+    }
+    
+    // Crear visualizador de audio
+    function createVisualizer() {
+        const visualizer = document.getElementById('audioVisualizer');
+        visualizer.innerHTML = '';
+        
+        for (let i = 0; i < 32; i++) {
+            const bar = document.createElement('div');
+            bar.className = 'w-2 bg-gradient-to-t from-spotify-green to-green-400 rounded-t transition-all duration-100';
+            bar.style.height = '8px';
+            bar.style.animationDelay = (i * 50) + 'ms';
+            visualizer.appendChild(bar);
+        }
+    }
+    
+    // Animar visualizador
+    function animateVisualizer() {
+        const bars = document.querySelectorAll('#audioVisualizer > div');
+        
+        if (isPlaying) {
+            bars.forEach((bar, index) => {
+                const height = Math.random() * 60 + 8;
+                bar.style.height = height + 'px';
+                bar.style.opacity = '1';
+            });
+        } else {
+            bars.forEach(bar => {
+                bar.style.height = '8px';
+                bar.style.opacity = '0.5';
+            });
+        }
+    }
+    
+    // Controles de reproducción
+    function togglePlay() {
+        if (isPlaying) {
+            audioPlayer.pause();
+            isPlaying = false;
+            document.getElementById('playPauseIcon').className = 'fas fa-play text-white text-xl ml-1';
+            document.getElementById('mainPlayIcon').className = 'fas fa-play text-black text-2xl ml-1';
+        } else {
+            audioPlayer.play();
+            isPlaying = true;
+            document.getElementById('playPauseIcon').className = 'fas fa-pause text-white text-xl';
+            document.getElementById('mainPlayIcon').className = 'fas fa-pause text-black text-2xl';
+        }
+        
+        animateVisualizer();
+    }
+    
+    function rewind() {
+        audioPlayer.currentTime = Math.max(0, audioPlayer.currentTime - 10);
+    }
+    
+    function fastForward() {
+        audioPlayer.currentTime = Math.min(duration, audioPlayer.currentTime + 10);
+    }
+    
+    function previousTrack() {
+        // Implementar lógica para canción anterior
+        console.log('Previous track');
+    }
+    
+    function nextTrack() {
+        // Implementar lógica para siguiente canción
+        console.log('Next track');
+    }
+    
+    // Actualizar progreso
+    function updateProgress() {
+        currentTime = audioPlayer.currentTime;
+        const progress = (currentTime / duration) * 100;
+        
+        document.getElementById('progressBar').style.width = progress + '%';
+        document.getElementById('currentTime').textContent = formatTime(currentTime);
+        
+        // Animar visualizador mientras se reproduce
+        if (isPlaying) {
+            animateVisualizer();
+        }
+    }
+    
+    // Buscar posición en la canción
+    function seekTo(event) {
+        const progressContainer = event.currentTarget;
+        const clickX = event.offsetX;
+        const width = progressContainer.offsetWidth;
+        const newTime = (clickX / width) * duration;
+        
+        audioPlayer.currentTime = newTime;
+    }
+    
+    // Configurar eventos de la barra de progreso
+    function setupProgressBarEvents() {
+        const progressContainer = document.querySelector('.w-full.h-2.bg-gray-700');
+        const tooltip = document.getElementById('progressTooltip');
+        
+        progressContainer.addEventListener('mousemove', function(e) {
+            const rect = this.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const width = rect.width;
+            const time = (x / width) * duration;
+            
+            tooltip.textContent = formatTime(time);
+            tooltip.style.left = x + 'px';
+            tooltip.style.opacity = '1';
+        });
+        
+        progressContainer.addEventListener('mouseleave', function() {
+            tooltip.style.opacity = '0';
+        });
+    }
+    
+    // Control de volumen
+    function toggleMute() {
+        if (isMuted) {
+            audioPlayer.volume = volume;
+            isMuted = false;
+            document.getElementById('volumeIcon').className = volume > 0.5 ? 'fas fa-volume-up' : 'fas fa-volume-down';
+            document.getElementById('volumeBar').style.width = (volume * 100) + '%';
+        } else {
+            audioPlayer.volume = 0;
+            isMuted = true;
+            document.getElementById('volumeIcon').className = 'fas fa-volume-mute';
+            document.getElementById('volumeBar').style.width = '0%';
+        }
+    }
+    
+    function setVolume(event) {
+        const volumeContainer = event.currentTarget;
+        const clickX = event.offsetX;
+        const width = volumeContainer.offsetWidth;
+        volume = clickX / width;
+        
+        audioPlayer.volume = volume;
+        isMuted = false;
+        
+        document.getElementById('volumeBar').style.width = (volume * 100) + '%';
+        document.getElementById('volumeIcon').className = volume > 0.5 ? 'fas fa-volume-up' : volume > 0 ? 'fas fa-volume-down' : 'fas fa-volume-mute';
+    }
+    
+    // Cambiar velocidad de reproducción
+    function changePlaybackRate() {
+        const rate = document.getElementById('playbackRate').value;
+        audioPlayer.playbackRate = parseFloat(rate);
+    }
+    
+    // Toggle repetir
+    function toggleRepeat() {
+        isRepeating = !isRepeating;
+        const repeatBtn = document.getElementById('repeatBtn');
+        
+        if (isRepeating) {
+            repeatBtn.classList.remove('text-gray-400');
+            repeatBtn.classList.add('text-spotify-green');
+        } else {
+            repeatBtn.classList.remove('text-spotify-green');
+            repeatBtn.classList.add('text-gray-400');
+        }
+    }
+    
+    // Cuando termina la canción
+    function onTrackEnd() {
+        if (isRepeating) {
+            audioPlayer.currentTime = 0;
+            audioPlayer.play();
+        } else {
+            isPlaying = false;
+            document.getElementById('playPauseIcon').className = 'fas fa-play text-white text-xl ml-1';
+            document.getElementById('mainPlayIcon').className = 'fas fa-play text-black text-2xl ml-1';
+            animateVisualizer();
+            
+            // Auto-reproducir siguiente canción si existe
+            nextTrack();
+        }
+    }
+    
+    // Formatear tiempo
+    function formatTime(seconds) {
+        const minutes = Math.floor(seconds / 60);
+        const remainingSeconds = Math.floor(seconds % 60);
+        return minutes + ':' + (remainingSeconds < 10 ? '0' : '') + remainingSeconds;
+    }
+    
+    // Funciones de acción
+    function toggleFavorite() {
+        const heartIcon = document.querySelector('.fa-heart');
+        if (heartIcon.classList.contains('far')) {
+            heartIcon.classList.remove('far');
+            heartIcon.classList.add('fas');
+            heartIcon.parentElement.classList.add('text-red-400');
+        } else {
+            heartIcon.classList.remove('fas');
+            heartIcon.classList.add('far');
+            heartIcon.parentElement.classList.remove('text-red-400');
+        }
+    }
+    
+    function shareTrack() {
+        document.getElementById('shareModal').classList.remove('hidden');
+        document.getElementById('shareModal').classList.add('flex');
+    }
+    
+    function closeShareModal() {
+        document.getElementById('shareModal').classList.add('hidden');
+        document.getElementById('shareModal').classList.remove('flex');
+    }
+    
+    function copyLink() {
+        navigator.clipboard.writeText(window.location.href);
+        alert('Enlace copiado al portapapeles');
+        closeShareModal();
+    }
+    
+    function shareWhatsApp() {
+        const text = `🎵 Escucha "${cancionData.titulo}" de ${cancionData.artista} en Spotify Picaflorino: ${window.location.href}`;
+        window.open(`https://wa.me/?text=${encodeURIComponent(text)}`);
+    }
+    
+    function shareEmail() {
+        const subject = `🎵 ${cancionData.titulo} - ${cancionData.artista}`;
+        const body = `Te recomiendo esta canción educativa en Spotify Picaflorino:\n\n${window.location.href}`;
+        window.open(`mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`);
+    }
+    
+    function addToPlaylist() {
+        // Implementar lógica para agregar a playlist
+        alert('Función de agregar a playlist próximamente');
+    }
+    
+    function downloadTrack() {
+        // Implementar descarga (solo para usuarios autorizados)
+        alert('Función de descarga próximamente');
+    }
+    
+    function reportTrack() {
+        if (confirm('¿Deseas reportar esta canción por contenido inapropiado?')) {
+            alert('Reporte enviado. Gracias por ayudarnos a mantener la plataforma segura.');
+        }
+    }
+    
+    // Cargar canciones relacionadas
+    function loadRelatedTracks() {
+        // Simulación de carga de canciones relacionadas
+        const relatedContainer = document.getElementById('relatedTracks');
+        relatedContainer.innerHTML = `
+            <div class="text-center text-gray-400 col-span-full py-8">
+                <i class="fas fa-spinner fa-spin text-2xl mb-2"></i>
+                <p>Cargando canciones relacionadas...</p>
+            </div>
+        `;
+        
+        // Simular carga después de 2 segundos
+        setTimeout(() => {
+            relatedContainer.innerHTML = `
+                <div class="text-center text-gray-400 col-span-full py-8">
+                    <i class="fas fa-music text-3xl mb-2"></i>
+                    <p>No hay canciones relacionadas disponibles</p>
+                </div>
+            `;
+        }, 2000);
+    }
+    
+    // Datos de la canción para JavaScript
+    const cancionData = {
+        id: {{ cancion.id }},
+        titulo: "{{ cancion.titulo }}",
+        artista: "{{ cancion.artista }}",
+        album: "{{ cancion.album or '' }}",
+        duracion: {{ cancion.duracion or 0 }}
+    };
+    
+    // Atajos de teclado
+    document.addEventListener('keydown', function(e) {
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+        
+        switch(e.key) {
+            case ' ':
+                e.preventDefault();
+                togglePlay();
+                break;
+            case 'ArrowLeft':
+                e.preventDefault();
+                rewind();
+                break;
+            case 'ArrowRight':
+                e.preventDefault();
+                fastForward();
+                break;
+            case 'ArrowUp':
+                e.preventDefault();
+                volume = Math.min(1, volume + 0.1);
+                audioPlayer.volume = volume;
+                document.getElementById('volumeBar').style.width = (volume * 100) + '%';
+                break;
+            case 'ArrowDown':
+                e.preventDefault();
+                volume = Math.max(0, volume - 0.1);
+                audioPlayer.volume = volume;
+                document.getElementById('volumeBar').style.width = (volume * 100) + '%';
+                break;
+            case 'm':
+                toggleMute();
+                break;
+            case 'r':
+                toggleRepeat();
+                break;
+            case 'Escape':
+                closeShareModal();
+                break;
+        }
+    });
+    
+    // Inicializar cuando se carga la página
+    document.addEventListener('DOMContentLoaded', function() {
+        // Inicializar visualizador sin audio
+        createVisualizer();
+        animateVisualizer();
+        
+        // Animar visualizador cada 200ms
+        setInterval(animateVisualizer, 200);
+    });
+</script>
+{% endblock %}

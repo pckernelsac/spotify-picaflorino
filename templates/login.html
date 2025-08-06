@@ -1,0 +1,246 @@
+{% extends "base.html" %}
+
+{% block title %}Iniciar Sesión - Spotify Picaflorino{% endblock %}
+
+{% block content %}
+<div class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-md w-full space-y-8">
+        <div class="text-center">
+            <!-- Logo y título -->
+            <div class="flex justify-center mb-6">
+                <div class="w-20 h-20 bg-gradient-to-br from-ie-blue to-spotify-green rounded-full flex items-center justify-center shadow-xl">
+                    <i class="fas fa-music text-white text-3xl"></i>
+                </div>
+            </div>
+            
+            <h2 class="text-4xl font-bold text-gray-900 mb-2">Bienvenido de vuelta</h2>
+            <p class="text-gray-600">Inicia sesión en Spotify Picaflorino</p>
+            <p class="text-sm text-gray-500 mt-1">I.E. 30012 Victor Alberto Gill Mallma</p>
+        </div>
+
+        <!-- Formulario de login -->
+        <div class="bg-white p-8 rounded-2xl shadow-2xl border border-gray-100">
+            <form method="POST" class="space-y-6">
+                {{ form.hidden_tag() }}
+                
+                <!-- Campo Email -->
+                <div>
+                    <label for="{{ form.email.id }}" class="block text-sm font-medium text-gray-700 mb-2">
+                        <i class="fas fa-envelope mr-2 text-gray-400"></i>Correo Electrónico
+                    </label>
+                    <div class="relative">
+                        {{ form.email(class="appearance-none relative block w-full px-4 py-3 border border-gray-300 rounded-lg placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-2 focus:ring-ie-blue focus:border-transparent transition-all duration-200", 
+                                    placeholder="tu-email@ie30012.edu.pe") }}
+                        {% if form.email.errors %}
+                            <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                <i class="fas fa-exclamation-circle text-red-500"></i>
+                            </div>
+                        {% endif %}
+                    </div>
+                    {% if form.email.errors %}
+                        <div class="mt-1">
+                            {% for error in form.email.errors %}
+                                <p class="text-sm text-red-600"><i class="fas fa-times-circle mr-1"></i>{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Campo Contraseña -->
+                <div>
+                    <label for="{{ form.password.id }}" class="block text-sm font-medium text-gray-700 mb-2">
+                        <i class="fas fa-lock mr-2 text-gray-400"></i>Contraseña
+                    </label>
+                    <div class="relative">
+                        {{ form.password(class="appearance-none relative block w-full px-4 py-3 border border-gray-300 rounded-lg placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-2 focus:ring-ie-blue focus:border-transparent transition-all duration-200", 
+                                       placeholder="Tu contraseña") }}
+                        <button type="button" 
+                                onclick="togglePassword()" 
+                                class="absolute inset-y-0 right-0 pr-3 flex items-center">
+                            <i id="password-toggle-icon" class="fas fa-eye text-gray-400 hover:text-gray-600"></i>
+                        </button>
+                        {% if form.password.errors %}
+                            <div class="absolute inset-y-0 right-8 pr-3 flex items-center pointer-events-none">
+                                <i class="fas fa-exclamation-circle text-red-500"></i>
+                            </div>
+                        {% endif %}
+                    </div>
+                    {% if form.password.errors %}
+                        <div class="mt-1">
+                            {% for error in form.password.errors %}
+                                <p class="text-sm text-red-600"><i class="fas fa-times-circle mr-1"></i>{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Recordarme y Olvidé contraseña -->
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center">
+                        {{ form.recordarme(class="h-4 w-4 text-ie-blue focus:ring-ie-blue border-gray-300 rounded") }}
+                        <label for="{{ form.recordarme.id }}" class="ml-2 block text-sm text-gray-700">
+                            Recordarme
+                        </label>
+                    </div>
+                    
+                    <div class="text-sm">
+                        <a href="#" class="text-ie-blue hover:text-blue-800 font-medium">
+                            ¿Olvidaste tu contraseña?
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Botón de envío -->
+                <div>
+                    {{ form.submit(class="group relative w-full flex justify-center py-3 px-4 border border-transparent text-lg font-medium rounded-lg text-white bg-gradient-to-r from-ie-blue to-spotify-green hover:from-blue-700 hover:to-green-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-ie-blue transition-all duration-300 transform hover:scale-105") }}
+                </div>
+            </form>
+
+            <!-- Separador -->
+            <div class="mt-8">
+                <div class="relative">
+                    <div class="absolute inset-0 flex items-center">
+                        <div class="w-full border-t border-gray-300"></div>
+                    </div>
+                    <div class="relative flex justify-center text-sm">
+                        <span class="px-4 bg-white text-gray-500">¿Nuevo en Spotify Picaflorino?</span>
+                    </div>
+                </div>
+
+                <!-- Link a registro -->
+                <div class="mt-6">
+                    <a href="{{ url_for('registro') }}" 
+                       class="w-full flex justify-center py-3 px-4 border-2 border-gray-300 rounded-lg text-gray-700 hover:border-ie-blue hover:text-ie-blue font-medium transition-all duration-200">
+                        <i class="fas fa-user-plus mr-2"></i>
+                        Crear cuenta nueva
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Información adicional -->
+        <div class="text-center">
+            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <div class="flex items-center justify-center mb-2">
+                    <i class="fas fa-info-circle text-ie-blue mr-2"></i>
+                    <h3 class="text-sm font-medium text-ie-blue">Información para Estudiantes</h3>
+                </div>
+                <p class="text-xs text-gray-600">
+                    Si eres estudiante nuevo, solicita tu cuenta a tu docente o administrador. 
+                    Si ya tienes cuenta, utiliza el correo proporcionado por la institución.
+                </p>
+            </div>
+        </div>
+
+        <!-- Acceso rápido para demo -->
+        <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
+            <h4 class="text-sm font-medium text-gray-700 mb-3 text-center">
+                <i class="fas fa-play-circle mr-2"></i>Acceso de Demostración
+            </h4>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <button onclick="fillCredentials('admin@ie30012.edu.pe', 'admin123')" 
+                        class="bg-red-100 hover:bg-red-200 text-red-700 px-3 py-2 rounded text-sm transition-colors duration-200">
+                    <i class="fas fa-user-shield mr-1"></i>Admin Demo
+                </button>
+                <button onclick="fillCredentials('docente@ie30012.edu.pe', 'docente123')" 
+                        class="bg-blue-100 hover:bg-blue-200 text-blue-700 px-3 py-2 rounded text-sm transition-colors duration-200">
+                    <i class="fas fa-chalkboard-teacher mr-1"></i>Docente Demo
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Función para mostrar/ocultar contraseña
+    function togglePassword() {
+        const passwordField = document.getElementById('{{ form.password.id }}');
+        const toggleIcon = document.getElementById('password-toggle-icon');
+        
+        if (passwordField.type === 'password') {
+            passwordField.type = 'text';
+            toggleIcon.classList.remove('fa-eye');
+            toggleIcon.classList.add('fa-eye-slash');
+        } else {
+            passwordField.type = 'password';
+            toggleIcon.classList.remove('fa-eye-slash');
+            toggleIcon.classList.add('fa-eye');
+        }
+    }
+    
+    // Función para llenar credenciales de demo
+    function fillCredentials(email, password) {
+        document.getElementById('{{ form.email.id }}').value = email;
+        document.getElementById('{{ form.password.id }}').value = password;
+        
+        // Agregar efectos visuales
+        const emailField = document.getElementById('{{ form.email.id }}');
+        const passwordField = document.getElementById('{{ form.password.id }}');
+        
+        emailField.classList.add('ring-2', 'ring-green-400');
+        passwordField.classList.add('ring-2', 'ring-green-400');
+        
+        setTimeout(() => {
+            emailField.classList.remove('ring-2', 'ring-green-400');
+            passwordField.classList.remove('ring-2', 'ring-green-400');
+        }, 1000);
+    }
+    
+    // Validación en tiempo real
+    document.addEventListener('DOMContentLoaded', function() {
+        const emailField = document.getElementById('{{ form.email.id }}');
+        const passwordField = document.getElementById('{{ form.password.id }}');
+        const submitButton = document.querySelector('input[type="submit"]');
+        
+        function validateForm() {
+            const emailValid = emailField.value.length > 0 && emailField.value.includes('@');
+            const passwordValid = passwordField.value.length >= 6;
+            
+            if (emailValid && passwordValid) {
+                submitButton.classList.remove('opacity-50', 'cursor-not-allowed');
+                submitButton.disabled = false;
+            } else {
+                submitButton.classList.add('opacity-50', 'cursor-not-allowed');
+                submitButton.disabled = true;
+            }
+        }
+        
+        emailField.addEventListener('input', validateForm);
+        passwordField.addEventListener('input', validateForm);
+        
+        // Validación inicial
+        validateForm();
+        
+        // Animación de entrada
+        const formContainer = document.querySelector('.bg-white.p-8');
+        formContainer.style.opacity = '0';
+        formContainer.style.transform = 'translateY(20px)';
+        
+        setTimeout(() => {
+            formContainer.style.transition = 'all 0.5s ease-out';
+            formContainer.style.opacity = '1';
+            formContainer.style.transform = 'translateY(0)';
+        }, 100);
+    });
+    
+    // Efecto de particle background (opcional)
+    function createParticle() {
+        const particle = document.createElement('div');
+        particle.className = 'absolute w-2 h-2 bg-ie-blue opacity-20 rounded-full animate-ping';
+        particle.style.left = Math.random() * window.innerWidth + 'px';
+        particle.style.top = Math.random() * window.innerHeight + 'px';
+        particle.style.animationDelay = Math.random() * 2 + 's';
+        
+        document.body.appendChild(particle);
+        
+        setTimeout(() => {
+            particle.remove();
+        }, 3000);
+    }
+    
+    // Crear partículas cada 3 segundos
+    setInterval(createParticle, 3000);
+</script>
+{% endblock %}

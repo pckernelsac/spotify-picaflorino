@@ -1,0 +1,98 @@
+{
+  "canciones_prueba": [
+    {
+      "id": 1,
+      "titulo": "Bohemian Rhapsody",
+      "artista": "Queen",
+      "album": "A Night at the Opera",
+      "duracion": "5:55",
+      "genero": "Rock",
+      "año": 1975,
+      "reproducciones": 1500000
+    },
+    {
+      "id": 2,
+      "titulo": "Hotel California",
+      "artista": "Eagles",
+      "album": "Hotel California",
+      "duracion": "6:30",
+      "genero": "Rock",
+      "año": 1976,
+      "reproducciones": 1200000
+    },
+    {
+      "id": 3,
+      "titulo": "Billie Jean",
+      "artista": "Michael Jackson",
+      "album": "Thriller",
+      "duracion": "4:54",
+      "genero": "Pop",
+      "año": 1982,
+      "reproducciones": 2000000
+    },
+    {
+      "id": 4,
+      "titulo": "Imagine",
+      "artista": "John Lennon",
+      "album": "Imagine",
+      "duracion": "3:07",
+      "genero": "Pop Rock",
+      "año": 1971,
+      "reproducciones": 1800000
+    },
+    {
+      "id": 5,
+      "titulo": "Stairway to Heaven",
+      "artista": "Led Zeppelin",
+      "album": "Led Zeppelin IV",
+      "duracion": "8:02",
+      "genero": "Rock",
+      "año": 1971,
+      "reproducciones": 1600000
+    }
+  ],
+  "usuarios_prueba": [
+    {
+      "id": 1,
+      "nombre": "Juan Pérez",
+      "email": "juan@example.com",
+      "edad": 25,
+      "genero_favorito": "Rock",
+      "canciones_favoritas": [1, 2, 5]
+    },
+    {
+      "id": 2,
+      "nombre": "María García",
+      "email": "maria@example.com",
+      "edad": 30,
+      "genero_favorito": "Pop",
+      "canciones_favoritas": [3, 4]
+    },
+    {
+      "id": 3,
+      "nombre": "Carlos López",
+      "email": "carlos@example.com",
+      "edad": 28,
+      "genero_favorito": "Rock",
+      "canciones_favoritas": [1, 5]
+    }
+  ],
+  "playlists_prueba": [
+    {
+      "id": 1,
+      "nombre": "Rock Clásico",
+      "descripcion": "Las mejores canciones de rock de todos los tiempos",
+      "usuario_id": 1,
+      "canciones": [1, 2, 5],
+      "publica": true
+    },
+    {
+      "id": 2,
+      "nombre": "Pop Hits",
+      "descripcion": "Éxitos del pop que nunca pasan de moda",
+      "usuario_id": 2,
+      "canciones": [3, 4],
+      "publica": true
+    }
+  ]
+}

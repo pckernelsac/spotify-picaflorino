@@ -1,0 +1,371 @@
+{% extends "base.html" %}
+
+{% block title %}Registro - Spotify Picaflorino{% endblock %}
+
+{% block content %}
+<div class="min-h-screen py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-2xl mx-auto">
+        <div class="text-center mb-8">
+            <!-- Logo y título -->
+            <div class="flex justify-center mb-6">
+                <div class="w-20 h-20 bg-gradient-to-br from-ie-blue to-spotify-green rounded-full flex items-center justify-center shadow-xl">
+                    <i class="fas fa-user-plus text-white text-3xl"></i>
+                </div>
+            </div>
+            
+            <h2 class="text-4xl font-bold text-gray-900 mb-2">Únete a Spotify Picaflorino</h2>
+            <p class="text-gray-600">Crea tu cuenta en la plataforma educativa musical</p>
+            <p class="text-sm text-gray-500 mt-1">I.E. 30012 Victor Alberto Gill Mallma</p>
+        </div>
+
+        <!-- Formulario de registro -->
+        <div class="bg-white p-8 rounded-2xl shadow-2xl border border-gray-100">
+            <form method="POST" class="space-y-6" x-data="registroForm()">
+                {{ form.hidden_tag() }}
+                
+                <!-- Información Personal -->
+                <div class="border-b border-gray-200 pb-6">
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">
+                        <i class="fas fa-user mr-2 text-ie-blue"></i>Información Personal
+                    </h3>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- Nombre -->
+                        <div>
+                            <label for="{{ form.nombre.id }}" class="block text-sm font-medium text-gray-700 mb-2">
+                                Nombre(s) *
+                            </label>
+                            {{ form.nombre(class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-ie-blue focus:border-transparent transition-all duration-200", 
+                                        placeholder="Ejemplo: Juan Carlos") }}
+                            {% if form.nombre.errors %}
+                                <div class="mt-1">
+                                    {% for error in form.nombre.errors %}
+                                        <p class="text-sm text-red-600"><i class="fas fa-times-circle mr-1"></i>{{ error }}</p>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Apellidos -->
+                        <div>
+                            <label for="{{ form.apellidos.id }}" class="block text-sm font-medium text-gray-700 mb-2">
+                                Apellidos *
+                            </label>
+                            {{ form.apellidos(class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-ie-blue focus:border-transparent transition-all duration-200", 
+                                            placeholder="Ejemplo: García López") }}
+                            {% if form.apellidos.errors %}
+                                <div class="mt-1">
+                                    {% for error in form.apellidos.errors %}
+                                        <p class="text-sm text-red-600"><i class="fas fa-times-circle mr-1"></i>{{ error }}</p>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- Email -->
+                    <div class="mt-4">
+                        <label for="{{ form.email.id }}" class="block text-sm font-medium text-gray-700 mb-2">
+                            <i class="fas fa-envelope mr-2 text-gray-400"></i>Correo Electrónico *
+                        </label>
+                        {{ form.email(class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-ie-blue focus:border-transparent transition-all duration-200", 
+                                    placeholder="ejemplo@ie30012.edu.pe") }}
+                        {% if form.email.errors %}
+                            <div class="mt-1">
+                                {% for error in form.email.errors %}
+                                    <p class="text-sm text-red-600"><i class="fas fa-times-circle mr-1"></i>{{ error }}</p>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <p class="mt-1 text-xs text-gray-500">
+                            <i class="fas fa-info-circle mr-1"></i>
+                            Utiliza preferentemente un correo institucional
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Tipo de Usuario -->
+                <div class="border-b border-gray-200 pb-6">
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">
+                        <i class="fas fa-users mr-2 text-ie-blue"></i>Tipo de Usuario
+                    </h3>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="relative">
+                            <input type="radio" id="rol_estudiante" name="rol" value="estudiante" 
+                                   x-model="selectedRole" class="sr-only peer">
+                            <label for="rol_estudiante" 
+                                   class="flex items-center p-4 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-ie-blue transition-all duration-200 peer-checked:border-ie-blue peer-checked:bg-blue-50">
+                                <div class="w-12 h-12 bg-ie-gold rounded-full flex items-center justify-center mr-4">
+                                    <i class="fas fa-user-graduate text-white text-xl"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-medium text-gray-900">Estudiante</h4>
+                                    <p class="text-sm text-gray-600">Acceso a contenido educativo musical</p>
+                                </div>
+                            </label>
+                        </div>
+                        
+                        <div class="relative">
+                            <input type="radio" id="rol_docente" name="rol" value="docente" 
+                                   x-model="selectedRole" class="sr-only peer">
+                            <label for="rol_docente" 
+                                   class="flex items-center p-4 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-ie-blue transition-all duration-200 peer-checked:border-ie-blue peer-checked:bg-blue-50">
+                                <div class="w-12 h-12 bg-ie-blue rounded-full flex items-center justify-center mr-4">
+                                    <i class="fas fa-chalkboard-teacher text-white text-xl"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-medium text-gray-900">Docente</h4>
+                                    <p class="text-sm text-gray-600">Gestión y subida de contenido</p>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                    {{ form.rol(style="display: none;", **{"x-model": "selectedRole"}) }}
+                </div>
+
+                <!-- Información Académica -->
+                <div class="border-b border-gray-200 pb-6" x-show="selectedRole">
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">
+                        <i class="fas fa-school mr-2 text-ie-blue"></i>Información Académica
+                    </h3>
+                    
+                    <!-- Para Estudiantes -->
+                    <div x-show="selectedRole === 'estudiante'" class="space-y-4">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label for="{{ form.grado.id }}" class="block text-sm font-medium text-gray-700 mb-2">
+                                    Grado *
+                                </label>
+                                {{ form.grado(class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-ie-blue focus:border-transparent transition-all duration-200") }}
+                                {% if form.grado.errors %}
+                                    <div class="mt-1">
+                                        {% for error in form.grado.errors %}
+                                            <p class="text-sm text-red-600"><i class="fas fa-times-circle mr-1"></i>{{ error }}</p>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div>
+                                <label for="{{ form.seccion.id }}" class="block text-sm font-medium text-gray-700 mb-2">
+                                    Sección *
+                                </label>
+                                {{ form.seccion(class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-ie-blue focus:border-transparent transition-all duration-200") }}
+                                {% if form.seccion.errors %}
+                                    <div class="mt-1">
+                                        {% for error in form.seccion.errors %}
+                                            <p class="text-sm text-red-600"><i class="fas fa-times-circle mr-1"></i>{{ error }}</p>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Para Docentes -->
+                    <div x-show="selectedRole === 'docente'">
+                        <div>
+                            <label for="{{ form.especialidad.id }}" class="block text-sm font-medium text-gray-700 mb-2">
+                                Especialidad/Materia
+                            </label>
+                            {{ form.especialidad(class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-ie-blue focus:border-transparent transition-all duration-200", 
+                                               placeholder="Ejemplo: Educación Musical, Matemáticas, Comunicación") }}
+                            {% if form.especialidad.errors %}
+                                <div class="mt-1">
+                                    {% for error in form.especialidad.errors %}
+                                        <p class="text-sm text-red-600"><i class="fas fa-times-circle mr-1"></i>{{ error }}</p>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Contraseña -->
+                <div class="space-y-4">
+                    <h3 class="text-lg font-medium text-gray-900">
+                        <i class="fas fa-lock mr-2 text-ie-blue"></i>Seguridad
+                    </h3>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- Contraseña -->
+                        <div>
+                            <label for="{{ form.password.id }}" class="block text-sm font-medium text-gray-700 mb-2">
+                                Contraseña *
+                            </label>
+                            <div class="relative">
+                                {{ form.password(class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-ie-blue focus:border-transparent transition-all duration-200", 
+                                               placeholder="Mínimo 6 caracteres", **{"x-model": "password"}) }}
+                                <button type="button" 
+                                        onclick="togglePassword('{{ form.password.id }}', 'password-toggle-1')" 
+                                        class="absolute inset-y-0 right-0 pr-3 flex items-center">
+                                    <i id="password-toggle-1" class="fas fa-eye text-gray-400 hover:text-gray-600"></i>
+                                </button>
+                            </div>
+                            {% if form.password.errors %}
+                                <div class="mt-1">
+                                    {% for error in form.password.errors %}
+                                        <p class="text-sm text-red-600"><i class="fas fa-times-circle mr-1"></i>{{ error }}</p>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            
+                            <!-- Indicador de fuerza de contraseña -->
+                            <div class="mt-2" x-show="password.length > 0">
+                                <div class="flex space-x-1">
+                                    <div class="h-1 flex-1 rounded" :class="passwordStrength >= 1 ? 'bg-red-500' : 'bg-gray-200'"></div>
+                                    <div class="h-1 flex-1 rounded" :class="passwordStrength >= 2 ? 'bg-yellow-500' : 'bg-gray-200'"></div>
+                                    <div class="h-1 flex-1 rounded" :class="passwordStrength >= 3 ? 'bg-green-500' : 'bg-gray-200'"></div>
+                                </div>
+                                <p class="text-xs mt-1" :class="passwordStrength === 1 ? 'text-red-600' : passwordStrength === 2 ? 'text-yellow-600' : 'text-green-600'">
+                                    <span x-text="passwordStrengthText"></span>
+                                </p>
+                            </div>
+                        </div>
+                        
+                        <!-- Confirmar Contraseña -->
+                        <div>
+                            <label for="{{ form.password2.id }}" class="block text-sm font-medium text-gray-700 mb-2">
+                                Confirmar Contraseña *
+                            </label>
+                            <div class="relative">
+                                {{ form.password2(class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-ie-blue focus:border-transparent transition-all duration-200", 
+                                                placeholder="Repite tu contraseña", **{"x-model": "password2"}) }}
+                                <button type="button" 
+                                        onclick="togglePassword('{{ form.password2.id }}', 'password-toggle-2')" 
+                                        class="absolute inset-y-0 right-0 pr-3 flex items-center">
+                                    <i id="password-toggle-2" class="fas fa-eye text-gray-400 hover:text-gray-600"></i>
+                                </button>
+                            </div>
+                            {% if form.password2.errors %}
+                                <div class="mt-1">
+                                    {% for error in form.password2.errors %}
+                                        <p class="text-sm text-red-600"><i class="fas fa-times-circle mr-1"></i>{{ error }}</p>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            
+                            <!-- Indicador de coincidencia -->
+                            <div class="mt-2" x-show="password2.length > 0">
+                                <p class="text-xs" :class="password === password2 ? 'text-green-600' : 'text-red-600'">
+                                    <i :class="password === password2 ? 'fas fa-check-circle' : 'fas fa-times-circle'" class="mr-1"></i>
+                                    <span x-text="password === password2 ? 'Las contraseñas coinciden' : 'Las contraseñas no coinciden'"></span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Términos y Condiciones -->
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <div class="flex items-start">
+                        <input type="checkbox" id="terms" required 
+                               class="mt-1 h-4 w-4 text-ie-blue focus:ring-ie-blue border-gray-300 rounded">
+                        <label for="terms" class="ml-3 text-sm text-gray-700">
+                            Acepto los 
+                            <a href="#" class="text-ie-blue hover:text-blue-800 font-medium">términos y condiciones</a> 
+                            y la 
+                            <a href="#" class="text-ie-blue hover:text-blue-800 font-medium">política de privacidad</a> 
+                            de Spotify Picaflorino y la I.E. 30012 Victor Alberto Gill Mallma.
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Botón de envío -->
+                <div>
+                    {{ form.submit(class="w-full flex justify-center py-4 px-6 border border-transparent text-lg font-medium rounded-lg text-white bg-gradient-to-r from-ie-blue to-spotify-green hover:from-blue-700 hover:to-green-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-ie-blue transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed", 
+                                 **{"x-bind:disabled": "!canSubmit"}) }}
+                </div>
+            </form>
+
+            <!-- Separador -->
+            <div class="mt-8">
+                <div class="relative">
+                    <div class="absolute inset-0 flex items-center">
+                        <div class="w-full border-t border-gray-300"></div>
+                    </div>
+                    <div class="relative flex justify-center text-sm">
+                        <span class="px-4 bg-white text-gray-500">¿Ya tienes una cuenta?</span>
+                    </div>
+                </div>
+
+                <!-- Link a login -->
+                <div class="mt-6">
+                    <a href="{{ url_for('login') }}" 
+                       class="w-full flex justify-center py-3 px-4 border-2 border-gray-300 rounded-lg text-gray-700 hover:border-ie-blue hover:text-ie-blue font-medium transition-all duration-200">
+                        <i class="fas fa-sign-in-alt mr-2"></i>
+                        Iniciar sesión
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function registroForm() {
+        return {
+            selectedRole: 'estudiante',
+            password: '',
+            password2: '',
+            
+            get passwordStrength() {
+                if (this.password.length < 6) return 1;
+                if (this.password.length < 8) return 2;
+                return 3;
+            },
+            
+            get passwordStrengthText() {
+                if (this.passwordStrength === 1) return 'Contraseña débil';
+                if (this.passwordStrength === 2) return 'Contraseña media';
+                return 'Contraseña fuerte';
+            },
+            
+            get canSubmit() {
+                return this.password.length >= 6 && 
+                       this.password === this.password2 && 
+                       this.selectedRole;
+            }
+        }
+    }
+    
+    // Función para mostrar/ocultar contraseña
+    function togglePassword(fieldId, iconId) {
+        const passwordField = document.getElementById(fieldId);
+        const toggleIcon = document.getElementById(iconId);
+        
+        if (passwordField.type === 'password') {
+            passwordField.type = 'text';
+            toggleIcon.classList.remove('fa-eye');
+            toggleIcon.classList.add('fa-eye-slash');
+        } else {
+            passwordField.type = 'password';
+            toggleIcon.classList.remove('fa-eye-slash');
+            toggleIcon.classList.add('fa-eye');
+        }
+    }
+    
+    // Animaciones y efectos
+    document.addEventListener('DOMContentLoaded', function() {
+        // Animación de entrada
+        const formContainer = document.querySelector('.bg-white.p-8');
+        formContainer.style.opacity = '0';
+        formContainer.style.transform = 'translateY(20px)';
+        
+        setTimeout(() => {
+            formContainer.style.transition = 'all 0.5s ease-out';
+            formContainer.style.opacity = '1';
+            formContainer.style.transform = 'translateY(0)';
+        }, 100);
+        
+        // Auto-scroll al error si existe
+        const firstError = document.querySelector('.text-red-600');
+        if (firstError) {
+            firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    });
+</script>
+{% endblock %}

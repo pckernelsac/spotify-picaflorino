@@ -1,0 +1,135 @@
+# Notas de Desarrollo - Proyecto Spotify Clone
+
+## 📝 Tareas Pendientes
+
+### Prioridad Alta
+- Implementar sistema de autenticación más robusto
+- Agregar validación de archivos de audio en la subida
+- Mejorar la seguridad de las rutas protegidas
+- Implementar manejo de errores más detallado
+
+### Prioridad Media
+- Añadir sistema de búsqueda avanzada
+- Crear API REST para móviles
+- Implementar cache para mejorar rendimiento
+- Agregar tests unitarios
+
+### Prioridad Baja
+- Interfaz de administración
+- Sistema de notificaciones
+- Modo oscuro/claro
+- Integración con redes sociales
+
+## 🐛 Bugs Conocidos
+
+1. **Reproductor**: A veces no carga el siguiente track automáticamente
+   - Posible solución: Revisar eventos JavaScript del reproductor
+
+2. **Subida de archivos**: No valida correctamente el formato de audio
+   - Solución: Implementar validación del lado del servidor
+
+3. **Login**: Sesión expira muy rápido
+   - Solución: Configurar tiempo de expiración en config.py
+
+## 💡 Ideas para Mejoras
+
+### Funcionalidades Nuevas
+- **Modo offline**: Permitir descargar canciones para escuchar sin conexión
+- **Letras sincronizadas**: Mostrar letras en tiempo real
+- **Radio personalizada**: Crear estaciones basadas en gustos del usuario
+- **Colaboración en playlists**: Permitir que varios usuarios editen una playlist
+- **Historial de reproducción**: Guardar y mostrar canciones reproducidas recientemente
+
+### Mejoras Técnicas
+- **Optimización de base de datos**: Índices para búsquedas más rápidas
+- **Compresión de audio**: Reducir tamaño de archivos sin perder calidad
+- **CDN**: Servir archivos estáticos desde CDN
+- **Microservicios**: Separar funcionalidades en servicios independientes
+
+## 🔍 Testing
+
+### Casos de Prueba a Implementar
+- Registro de usuario con datos válidos/inválidos
+- Login con credenciales correctas/incorrectas
+- Subida de archivos de diferentes formatos
+- Creación y edición de playlists
+- Reproducción de canciones
+- Búsqueda de música
+
+### Herramientas de Testing
+- pytest para tests unitarios
+- Selenium para tests de interfaz
+- Postman para tests de API
+
+## 📊 Métricas a Implementar
+
+### Analytics de Usuario
+- Canciones más reproducidas
+- Tiempo promedio de sesión
+- Géneros más populares
+- Playlists más compartidas
+
+### Métricas Técnicas
+- Tiempo de respuesta de las páginas
+- Uso de memoria y CPU
+- Errores por minuto
+- Uptime del servidor
+
+## 🔐 Seguridad
+
+### Medidas Implementadas
+- Hash de contraseñas con bcrypt
+- Validación de formularios
+- Protección CSRF
+
+### Pendientes de Implementar
+- Rate limiting para prevenir spam
+- Validación de archivos más estricta
+- Logs de seguridad
+- 2FA (autenticación de dos factores)
+
+## 📱 Responsive Design
+
+### Breakpoints
+- Mobile: 320px - 768px
+- Tablet: 768px - 1024px
+- Desktop: 1024px+
+
+### Elementos a Optimizar
+- Reproductor en móviles
+- Lista de canciones en tablets
+- Sidebar en pantallas pequeñas
+
+## 🌐 Internacionalización
+
+### Idiomas a Soportar
+- Español (actual)
+- Inglés
+- Portugués
+- Francés
+
+### Archivos de Traducción
+- Crear archivos JSON con traducciones
+- Implementar sistema de cambio de idioma
+- Formatear fechas según región
+
+---
+
+## 📅 Historial de Cambios
+
+### v0.1.0 (Actual)
+- Estructura básica del proyecto
+- Sistema de login/registro
+- Reproductor básico
+- Subida de archivos
+
+### Próxima versión (v0.2.0)
+- Mejoras en el reproductor
+- Sistema de búsqueda
+- Playlists colaborativas
+- API REST básica
+
+---
+
+**Última actualización**: Junio 2025
+**Próxima revisión**: Julio 2025

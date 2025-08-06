@@ -1,0 +1,542 @@
+{% extends "base.html" %}
+
+{% block title %}Subir Música - Spotify Picaflorino{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50 py-8">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <div class="flex justify-center mb-4">
+                <div class="w-16 h-16 bg-gradient-to-br from-spotify-green to-green-600 rounded-full flex items-center justify-center shadow-xl">
+                    <i class="fas fa-upload text-white text-2xl"></i>
+                </div>
+            </div>
+            <h1 class="text-4xl font-bold text-gray-900 mb-2">Subir Nueva Canción</h1>
+            <p class="text-xl text-gray-600">Comparte contenido musical educativo con la comunidad</p>
+            <p class="text-sm text-gray-500 mt-2">
+                <i class="fas fa-info-circle mr-1"></i>
+                Solo docentes y administradores pueden subir música
+            </p>
+        </div>
+
+        <!-- Formulario de subida -->
+        <div class="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
+            <form method="POST" enctype="multipart/form-data" x-data="uploadForm()" @submit="handleSubmit">
+                {{ form.hidden_tag() }}
+                
+                <!-- Progreso de subida -->
+                <div x-show="uploading" class="bg-ie-blue text-white p-4">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-white mr-3"></div>
+                            <span>Subiendo archivo...</span>
+                        </div>
+                        <span x-text="uploadProgress + '%'"></span>
+                    </div>
+                    <div class="w-full bg-blue-800 rounded-full h-2 mt-2">
+                        <div class="bg-white h-2 rounded-full transition-all duration-300" 
+                             :style="'width: ' + uploadProgress + '%'"></div>
+                    </div>
+                </div>
+
+                <div class="p-8 space-y-8">
+                    
+                    <!-- Sección 1: Archivo de Audio -->
+                    <div class="border-b border-gray-200 pb-8">
+                        <h3 class="text-xl font-semibold text-gray-900 mb-6 flex items-center">
+                            <i class="fas fa-file-audio mr-3 text-spotify-green"></i>
+                            Archivo de Audio
+                        </h3>
+                        
+                        <div class="space-y-4">
+                            <!-- Zona de drop -->
+                            <div class="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center hover:border-spotify-green transition-colors duration-200"
+                                 x-data="dropZone()" 
+                                 @dragover.prevent="dragover = true"
+                                 @dragleave.prevent="dragover = false"
+                                 @drop.prevent="handleDrop"
+                                 :class="dragover ? 'border-spotify-green bg-green-50' : ''">
+                                
+                                <input type="file" id="{{ form.archivo_audio.id }}" name="{{ form.archivo_audio.name }}" 
+                                       accept=".mp3,.wav,.ogg,.flac,.m4a" 
+                                       class="hidden" @change="handleFileSelect($event)">
+                                
+                                <div x-show="!selectedFile">
+                                    <div class="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                        <i class="fas fa-cloud-upload-alt text-gray-400 text-3xl"></i>
+                                    </div>
+                                    <h4 class="text-lg font-medium text-gray-900 mb-2">Arrastra tu archivo aquí</h4>
+                                    <p class="text-gray-600 mb-4">o</p>
+                                    <button type="button" onclick="document.getElementById('{{ form.archivo_audio.id }}').click()"
+                                            class="bg-spotify-green text-white px-6 py-3 rounded-lg hover:bg-green-600 transition-colors duration-200">
+                                        <i class="fas fa-folder-open mr-2"></i>Seleccionar Archivo
+                                    </button>
+                                    <p class="text-sm text-gray-500 mt-4">
+                                        Formatos soportados: MP3, WAV, OGG, FLAC, M4A (Máximo 50MB)
+                                    </p>
+                                </div>
+                                
+                                <div x-show="selectedFile" class="space-y-4">
+                                    <div class="flex items-center justify-center space-x-4">
+                                        <div class="w-16 h-16 bg-spotify-green rounded-full flex items-center justify-center">
+                                            <i class="fas fa-music text-white text-xl"></i>
+                                        </div>
+                                        <div class="text-left">
+                                            <h4 class="font-semibold text-gray-900" x-text="selectedFile?.name"></h4>
+                                            <p class="text-sm text-gray-600" x-text="formatFileSize(selectedFile?.size)"></p>
+                                        </div>
+                                    </div>
+                                    
+                                    <button type="button" @click="removeFile()"
+                                            class="text-red-600 hover:text-red-800 text-sm">
+                                        <i class="fas fa-trash mr-1"></i>Remover archivo
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            {% if form.archivo_audio.errors %}
+                                <div class="text-red-600 text-sm">
+                                    {% for error in form.archivo_audio.errors %}
+                                        <p><i class="fas fa-exclamation-circle mr-1"></i>{{ error }}</p>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Sección 2: Información Básica -->
+                    <div class="border-b border-gray-200 pb-8">
+                        <h3 class="text-xl font-semibold text-gray-900 mb-6 flex items-center">
+                            <i class="fas fa-info-circle mr-3 text-ie-blue"></i>
+                            Información Básica
+                        </h3>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <!-- Título -->
+                            <div class="md:col-span-2">
+                                <label for="{{ form.titulo.id }}" class="block text-sm font-medium text-gray-700 mb-2">
+                                    Título de la Canción *
+                                </label>
+                                {{ form.titulo(class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-ie-blue focus:border-transparent transition-all duration-200", 
+                                             placeholder="Ejemplo: Las Tablas de Multiplicar") }}
+                                {% if form.titulo.errors %}
+                                    <div class="mt-1 text-red-600 text-sm">
+                                        {% for error in form.titulo.errors %}
+                                            <p><i class="fas fa-times-circle mr-1"></i>{{ error }}</p>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Artista -->
+                            <div>
+                                <label for="{{ form.artista.id }}" class="block text-sm font-medium text-gray-700 mb-2">
+                                    Artista *
+                                </label>
+                                {{ form.artista(class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-ie-blue focus:border-transparent transition-all duration-200", 
+                                               placeholder="Nombre del artista o intérprete") }}
+                                {% if form.artista.errors %}
+                                    <div class="mt-1 text-red-600 text-sm">
+                                        {% for error in form.artista.errors %}
+                                            <p><i class="fas fa-times-circle mr-1"></i>{{ error }}</p>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Álbum -->
+                            <div>
+                                <label for="{{ form.album.id }}" class="block text-sm font-medium text-gray-700 mb-2">
+                                    Álbum
+                                </label>
+                                {{ form.album(class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-ie-blue focus:border-transparent transition-all duration-200", 
+                                             placeholder="Nombre del álbum (opcional)") }}
+                            </div>
+                            
+                            <!-- Género -->
+                            <div>
+                                <label for="{{ form.genero.id }}" class="block text-sm font-medium text-gray-700 mb-2">
+                                    Género Musical
+                                </label>
+                                {{ form.genero(class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-ie-blue focus:border-transparent transition-all duration-200") }}
+                            </div>
+                            
+                            <!-- Año -->
+                            <div>
+                                <label for="{{ form.año.id }}" class="block text-sm font-medium text-gray-700 mb-2">
+                                    Año de Lanzamiento
+                                </label>
+                                {{ form.año(class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-ie-blue focus:border-transparent transition-all duration-200", 
+                                           placeholder="2024") }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sección 3: Información Educativa -->
+                    <div class="border-b border-gray-200 pb-8">
+                        <h3 class="text-xl font-semibold text-gray-900 mb-6 flex items-center">
+                            <i class="fas fa-graduation-cap mr-3 text-ie-gold"></i>
+                            Información Educativa
+                        </h3>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <!-- Materia -->
+                            <div>
+                                <label for="{{ form.materia.id }}" class="block text-sm font-medium text-gray-700 mb-2">
+                                    Materia Relacionada
+                                </label>
+                                {{ form.materia(class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-ie-blue focus:border-transparent transition-all duration-200") }}
+                                <p class="text-xs text-gray-500 mt-1">
+                                    <i class="fas fa-lightbulb mr-1"></i>
+                                    Selecciona la materia para la cual es útil esta canción
+                                </p>
+                            </div>
+                            
+                            <!-- Grado Objetivo -->
+                            <div>
+                                <label for="{{ form.grado_objetivo.id }}" class="block text-sm font-medium text-gray-700 mb-2">
+                                    Grado Objetivo
+                                </label>
+                                {{ form.grado_objetivo(class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-ie-blue focus:border-transparent transition-all duration-200") }}
+                                <p class="text-xs text-gray-500 mt-1">
+                                    <i class="fas fa-users mr-1"></i>
+                                    ¿Para qué grado está destinada principalmente?
+                                </p>
+                            </div>
+                        </div>
+                        
+                        <!-- Descripción -->
+                        <div class="mt-6">
+                            <label for="{{ form.descripcion.id }}" class="block text-sm font-medium text-gray-700 mb-2">
+                                Descripción Educativa
+                            </label>
+                            {{ form.descripcion(class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-ie-blue focus:border-transparent transition-all duration-200", 
+                                               rows="4", 
+                                               placeholder="Describe cómo esta canción puede ser utilizada en el aula, qué conceptos enseña, actividades sugeridas, etc.") }}
+                            <div class="flex justify-between items-center mt-1">
+                                <p class="text-xs text-gray-500">
+                                    <i class="fas fa-edit mr-1"></i>
+                                    Ayuda a otros docentes a entender el valor educativo de esta canción
+                                </p>
+                                <span class="text-xs text-gray-500" x-text="(form.descripcion.value || '').length + '/500'"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sección 4: Imagen de Portada -->
+                    <div class="border-b border-gray-200 pb-8">
+                        <h3 class="text-xl font-semibold text-gray-900 mb-6 flex items-center">
+                            <i class="fas fa-image mr-3 text-purple-600"></i>
+                            Imagen de Portada (Opcional)
+                        </h3>
+                        
+                        <div class="space-y-4">
+                            <!-- Zona de drop para imagen -->
+                            <div class="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center hover:border-purple-600 transition-colors duration-200"
+                                 x-data="imageDropZone()" 
+                                 @dragover.prevent="imageDragover = true"
+                                 @dragleave.prevent="imageDragover = false"
+                                 @drop.prevent="handleImageDrop"
+                                 :class="imageDragover ? 'border-purple-600 bg-purple-50' : ''">
+                                
+                                <input type="file" id="{{ form.cover_image.id }}" name="{{ form.cover_image.name }}" 
+                                       accept=".jpg,.jpeg,.png,.gif,.webp" 
+                                       class="hidden" @change="handleImageSelect($event)">
+                                
+                                <div x-show="!selectedImage">
+                                    <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                        <i class="fas fa-camera text-gray-400 text-2xl"></i>
+                                    </div>
+                                    <button type="button" onclick="document.getElementById('{{ form.cover_image.id }}').click()"
+                                            class="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition-colors duration-200">
+                                        <i class="fas fa-upload mr-2"></i>Subir Imagen
+                                    </button>
+                                    <p class="text-sm text-gray-500 mt-2">
+                                        JPG, PNG, GIF o WebP (Máximo 5MB)
+                                    </p>
+                                </div>
+                                
+                                <div x-show="selectedImage" class="space-y-4">
+                                    <img :src="imagePreview" alt="Preview" class="w-32 h-32 object-cover rounded-lg mx-auto">
+                                    <button type="button" @click="removeImage()"
+                                            class="text-red-600 hover:text-red-800 text-sm">
+                                        <i class="fas fa-trash mr-1"></i>Remover imagen
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            {% if form.cover_image.errors %}
+                                <div class="text-red-600 text-sm">
+                                    {% for error in form.cover_image.errors %}
+                                        <p><i class="fas fa-exclamation-circle mr-1"></i>{{ error }}</p>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Sección 5: Vista Previa y Confirmación -->
+                    <div>
+                        <h3 class="text-xl font-semibold text-gray-900 mb-6 flex items-center">
+                            <i class="fas fa-eye mr-3 text-green-600"></i>
+                            Vista Previa
+                        </h3>
+                        
+                        <!-- Card de vista previa -->
+                        <div class="bg-gray-50 rounded-xl p-6 border border-gray-200">
+                            <div class="flex items-start space-x-4">
+                                <div class="w-20 h-20 bg-gradient-to-br from-ie-blue to-spotify-green rounded-lg flex items-center justify-center flex-shrink-0">
+                                    <i class="fas fa-music text-white text-2xl"></i>
+                                </div>
+                                
+                                <div class="flex-1 min-w-0">
+                                    <h4 class="text-lg font-semibold text-gray-900" x-text="form.titulo.value || 'Título de la canción'"></h4>
+                                    <p class="text-gray-600" x-text="form.artista.value || 'Artista'"></p>
+                                    <div class="flex flex-wrap gap-2 mt-2">
+                                        <span class="bg-ie-blue text-white px-2 py-1 rounded-full text-xs" 
+                                              x-show="form.materia.value"
+                                              x-text="form.materia.options[form.materia.selectedIndex]?.text || ''"></span>
+                                        <span class="bg-ie-gold text-white px-2 py-1 rounded-full text-xs" 
+                                              x-show="form.grado_objetivo.value"
+                                              x-text="form.grado_objetivo.value"></span>
+                                        <span class="bg-spotify-green text-white px-2 py-1 rounded-full text-xs" 
+                                              x-show="form.genero.value"
+                                              x-text="form.genero.options[form.genero.selectedIndex]?.text || ''"></span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="mt-4 pt-4 border-t border-gray-300">
+                                <p class="text-sm text-gray-600" 
+                                   x-text="form.descripcion.value || 'Sin descripción disponible'"></p>
+                            </div>
+                        </div>
+                        
+                        <!-- Términos y políticas -->
+                        <div class="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
+                            <div class="flex items-start">
+                                <input type="checkbox" id="terms" required 
+                                       class="mt-1 h-4 w-4 text-ie-blue focus:ring-ie-blue border-gray-300 rounded">
+                                <label for="terms" class="ml-3 text-sm text-gray-700">
+                                    Confirmo que tengo los derechos necesarios para subir este contenido y que es apropiado para uso educativo. 
+                                    La música será revisada antes de estar disponible para todos los usuarios.
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Botones de acción -->
+                <div class="bg-gray-50 px-8 py-6 flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0">
+                    <a href="{{ url_for('biblioteca') }}" 
+                       class="text-gray-600 hover:text-gray-800 flex items-center">
+                        <i class="fas fa-arrow-left mr-2"></i>Volver a la biblioteca
+                    </a>
+                    
+                    <div class="flex space-x-4">
+                        <button type="button" onclick="clearForm()" 
+                                class="bg-gray-500 text-white px-6 py-3 rounded-lg hover:bg-gray-600 transition-colors duration-200">
+                            <i class="fas fa-eraser mr-2"></i>Limpiar Formulario
+                        </button>
+                        
+                        {{ form.submit(class="bg-gradient-to-r from-spotify-green to-green-600 text-white px-8 py-3 rounded-lg hover:from-green-600 hover:to-green-700 transition-all duration-200 font-semibold flex items-center disabled:opacity-50 disabled:cursor-not-allowed", 
+                                     **{"x-bind:disabled": "uploading || !canSubmit"}) }}
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function uploadForm() {
+        return {
+            uploading: false,
+            uploadProgress: 0,
+            
+            get canSubmit() {
+                const audioFile = document.getElementById('{{ form.archivo_audio.id }}').files[0];
+                const titulo = document.getElementById('{{ form.titulo.id }}').value;
+                const artista = document.getElementById('{{ form.artista.id }}').value;
+                const terms = document.getElementById('terms').checked;
+                
+                return audioFile && titulo && artista && terms && !this.uploading;
+            },
+            
+            handleSubmit(e) {
+                if (!this.canSubmit) {
+                    e.preventDefault();
+                    return;
+                }
+                
+                this.uploading = true;
+                this.simulateUpload();
+            },
+            
+            simulateUpload() {
+                let progress = 0;
+                const interval = setInterval(() => {
+                    progress += Math.random() * 15;
+                    this.uploadProgress = Math.min(progress, 95);
+                    
+                    if (progress >= 95) {
+                        clearInterval(interval);
+                        this.uploadProgress = 100;
+                    }
+                }, 200);
+            }
+        }
+    }
+    
+    function dropZone() {
+        return {
+            selectedFile: null,
+            dragover: false,
+            
+            handleDrop(e) {
+                this.dragover = false;
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    this.handleFile(files[0]);
+                }
+            },
+            
+            handleFileSelect(e) {
+                if (e.target.files.length > 0) {
+                    this.handleFile(e.target.files[0]);
+                }
+            },
+            
+            handleFile(file) {
+                // Validar tipo de archivo
+                const allowedTypes = ['audio/mpeg', 'audio/wav', 'audio/ogg', 'audio/flac', 'audio/mp4'];
+                if (!allowedTypes.includes(file.type)) {
+                    alert('Tipo de archivo no soportado. Use MP3, WAV, OGG, FLAC o M4A.');
+                    return;
+                }
+                
+                // Validar tamaño (50MB)
+                if (file.size > 50 * 1024 * 1024) {
+                    alert('El archivo es demasiado grande. El tamaño máximo es 50MB.');
+                    return;
+                }
+                
+                this.selectedFile = file;
+                document.getElementById('{{ form.archivo_audio.id }}').files = e.dataTransfer?.files || e.target.files;
+            },
+            
+            removeFile() {
+                this.selectedFile = null;
+                document.getElementById('{{ form.archivo_audio.id }}').value = '';
+            },
+            
+            formatFileSize(bytes) {
+                if (!bytes) return '0 Bytes';
+                const k = 1024;
+                const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+                const i = Math.floor(Math.log(bytes) / Math.log(k));
+                return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+            }
+        }
+    }
+    
+    function imageDropZone() {
+        return {
+            selectedImage: null,
+            imagePreview: null,
+            imageDragover: false,
+            
+            handleImageDrop(e) {
+                this.imageDragover = false;
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    this.handleImageFile(files[0]);
+                }
+            },
+            
+            handleImageSelect(e) {
+                if (e.target.files.length > 0) {
+                    this.handleImageFile(e.target.files[0]);
+                }
+            },
+            
+            handleImageFile(file) {
+                // Validar tipo de archivo
+                const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+                if (!allowedTypes.includes(file.type)) {
+                    alert('Tipo de imagen no soportado. Use JPG, PNG, GIF o WebP.');
+                    return;
+                }
+                
+                // Validar tamaño (5MB)
+                if (file.size > 5 * 1024 * 1024) {
+                    alert('La imagen es demasiado grande. El tamaño máximo es 5MB.');
+                    return;
+                }
+                
+                this.selectedImage = file;
+                
+                // Crear preview
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    this.imagePreview = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            },
+            
+            removeImage() {
+                this.selectedImage = null;
+                this.imagePreview = null;
+                document.getElementById('{{ form.cover_image.id }}').value = '';
+            }
+        }
+    }
+    
+    function clearForm() {
+        if (confirm('¿Estás seguro de que quieres limpiar el formulario? Se perderán todos los datos ingresados.')) {
+            document.querySelector('form').reset();
+            // Resetear Alpine.js data
+            location.reload();
+        }
+    }
+    
+    // Auto-llenar algunos campos basados en el archivo
+    document.getElementById('{{ form.archivo_audio.id }}').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            // Intentar extraer título del nombre del archivo
+            const filename = file.name.replace(/\.[^/.]+$/, ""); // Remover extensión
+            const titleField = document.getElementById('{{ form.titulo.id }}');
+            
+            if (!titleField.value) {
+                // Limpiar y formatear el nombre del archivo como título
+                const cleanTitle = filename
+                    .replace(/[\-_]/g, ' ')
+                    .replace(/\b\w/g, l => l.toUpperCase());
+                titleField.value = cleanTitle;
+            }
+        }
+    });
+    
+    // Validación en tiempo real
+    document.addEventListener('DOMContentLoaded', function() {
+        const requiredFields = ['{{ form.titulo.id }}', '{{ form.artista.id }}'];
+        
+        requiredFields.forEach(fieldId => {
+            const field = document.getElementById(fieldId);
+            field.addEventListener('blur', function() {
+                if (!this.value.trim()) {
+                    this.classList.add('border-red-500');
+                } else {
+                    this.classList.remove('border-red-500');
+                    this.classList.add('border-green-500');
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}
