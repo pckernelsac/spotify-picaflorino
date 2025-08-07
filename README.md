@@ -102,6 +102,14 @@ python app.py
 
 La aplicación estará disponible en `http://localhost:5000`
 
+## 🧪 Pruebas
+
+Ejecuta la suite de pruebas con:
+
+```bash
+pytest
+```
+
 ## 📁 Estructura del Proyecto
 
 ```
